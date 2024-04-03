@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wochenbericht</string>
+    <string name="create_report">Bericht erstellen</string>
+    <string name="save">Speichern</string>
+    <string name="from_date">Von</string>
+    <string name="to_date">Bis</string>
+    <string name="weekday_descriptions">Wochentag</string>
+    <string name="preview">Vorschau</string>
+    <string name="report_name">Berichtsname*</string>
+    <string name="report_number">Berichtsnummer*</string>
+    <string name="year">Jahr</string>
+    <string name="week">Woche</string>
+    <string name="generate">Generieren</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="ai_dailog_title">KI-Berichtsassistent</string>
+    <string name="ai_dailog_secondry_title">Lasse die KI dich beim Erstellen deines Berichts helfen. Sei spezifisch!</string>
+    <string name="ai_dailog_textfield_lable">Beschreibe Deinen Berichtsbedarf</string>
+    <string name="description_dialog_title">Beschreibung hinzufügen</string>
+    <string name="description">Beschreibung</string>
+    <string name="confirm">Bestätigen</string>
+    <string name="back">Zurück</string>
+    <string name="user_profile">Benutzerprofil</string>
+    <string name="more_options">Weitere Optionen</string>
+    <string name="add_task_button">Aufgabe hinzufügen</string>
+    <string name="language">Sprache</string>
+    <string name="bookmarks">Lesezeichen</string>
+    <string name="trash">Papierkorb</string>
+    <string name="hours">Stunden</string>
+    <string name="all_reports">Alle Berichte</string>
+    <string name="number">Nummer</string>
+    <string name="date">Datum</string>
+    <string name="no_App_found_error">Keine App zum Öffnen des Dokuments gefunden</string>
+    <string name="new_report">Neuer Bericht</string>
+    <string name="language_dialg_title">Sprache ändern</string>
+    <string name="german">Deutsch</string>
+    <string name="english">Englisch</string>
+    <string name="language_dialog_title">App Sprache</string>
+    <string name="restore">Wiederherstellen</string>
+    <string name="delete">Löschen</string>
+    <string name="move_to_trash">In den Papierkorb</string>
+    <string name="bookmark">Lesezeichen</string>
+    <string name="remove_from_bookmark">Aus Lesezeichen entfernen</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="download">Herunterladen</string>
+</resources>
