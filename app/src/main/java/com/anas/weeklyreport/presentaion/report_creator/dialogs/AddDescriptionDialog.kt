@@ -11,9 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
-import com.anas.weeklyreport.domain.ReportCreatorScreenStates
-import com.anas.weeklyreport.model.Description
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
+import com.anas.weeklyreport.data.ReportCreatorScreenStates
 import com.anas.weeklyreport.shared.AppColors
 
 @Composable
@@ -44,10 +43,10 @@ fun AddDescriptionDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        onEvent(ReportCreatorScreenEvent.OnSaveDescriptionClick(Description(state.dialogDescriptionItem.description, state.dialogDescriptionItem.hours)))
+                        onEvent(ReportCreatorScreenEvent.OnSaveDescriptionClick)
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR.color),
-                    enabled = state.isSaveButtonInAddDescriptionDialogShown
+                    enabled = state.dialogDescriptionItem.description.isNotBlank() && state.dialogDescriptionItem.hours.isNotBlank()
                 ) {
                     Text(stringResource(id = R.string.save))
                 }

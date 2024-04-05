@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
-import com.anas.weeklyreport.domain.ReportCreatorScreenStates
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
+import com.anas.weeklyreport.data.ReportCreatorScreenStates
 import com.anas.weeklyreport.extension_methods.capitalizeFirstLetter
 import com.anas.weeklyreport.extension_methods.translateDay
 import com.anas.weeklyreport.model.Weekday

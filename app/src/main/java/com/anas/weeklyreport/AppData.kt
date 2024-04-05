@@ -2,19 +2,29 @@ package com.anas.weeklyreport
 
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.input.KeyboardType
 import com.anas.weeklyreport.model.Description
 import com.anas.weeklyreport.model.Report
 import com.anas.weeklyreport.model.Weekday
+import com.anas.weeklyreport.model.ui.ReportTextField
+import com.anas.weeklyreport.shared.TextFieldName
 import java.time.LocalDateTime
 import java.util.UUID
 
 
-
 object AppData {
+
     var allReports = mutableStateOf(arrayListOf<Report>())
     var testReports = generateReportDocuments(1)
-    var appLanguage = "en"
+    var appLanguage = ""
+    const val sharedPreferencesLanguageKey = "app_language"
+
+
 }
+
+
+
+
 
 private fun generateReportDocuments(count: Int): List<Report> {
     return (1..count).map { index ->

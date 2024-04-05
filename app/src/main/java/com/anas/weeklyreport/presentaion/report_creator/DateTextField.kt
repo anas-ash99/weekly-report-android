@@ -10,14 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
-import com.anas.weeklyreport.domain.ReportCreatorScreenStates
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
 
 @Composable
 fun DateTextField(
     label:String,
     onEvent:(ReportCreatorScreenEvent) ->Unit,
-    state:ReportCreatorScreenStates,
+    name:String,
     text:String
 )
 {
@@ -39,7 +38,7 @@ fun DateTextField(
             .fillMaxWidth()
             .padding(bottom = 15.dp)
             .onFocusChanged { focusState ->
-                onEvent(ReportCreatorScreenEvent.RequestDatePicker(label, focusState.isFocused))
+                onEvent(ReportCreatorScreenEvent.RequestDatePicker(name, focusState.isFocused))
             }
 
     )

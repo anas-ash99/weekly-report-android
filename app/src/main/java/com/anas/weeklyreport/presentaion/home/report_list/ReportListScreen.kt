@@ -19,6 +19,7 @@ import com.anas.weeklyreport.AppData.appLanguage
 import com.anas.weeklyreport.extension_methods.capitalizeFirstLetter
 import com.anas.weeklyreport.extension_methods.translateListType
 import com.anas.weeklyreport.presentaion.LoadingSpinner
+import com.anas.weeklyreport.presentaion.MyNotificationMessage
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.shared.BottomSheetBodyType
@@ -33,6 +34,7 @@ fun ReportListScreen(
     val viewmodel: HomeViewmodel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
     val reports = viewmodel.reports
+
     LaunchedEffect(Unit){
         if (type.lowercase() == "trash"){
             viewmodel.onEvent(HomeScreenEvent.ChangeBottomSheetType(BottomSheetBodyType.TRASH_OPTIONS))
@@ -56,6 +58,9 @@ fun ReportListScreen(
                 type = type,
                 navController = navController!!
             )
+        }
+        MyNotificationMessage(message = state.toastMessage, isVisible = state.isNotificationMessageShown){
+            viewmodel.onEvent(HomeScreenEvent.RequestNotificationMessage(false))
         }
         LoadingSpinner(isVisible = state.screenLoading)
     }

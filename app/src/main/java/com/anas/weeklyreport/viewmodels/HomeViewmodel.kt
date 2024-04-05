@@ -5,14 +5,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.AppData.allReports
 import com.anas.weeklyreport.AppData.appLanguage
-import com.anas.weeklyreport.domain.DataState
-import com.anas.weeklyreport.domain.HomeScreenState
-import com.anas.weeklyreport.domain.repository.MyServerRepo
+import com.anas.weeklyreport.data.DataState
+import com.anas.weeklyreport.data.HomeScreenState
+import com.anas.weeklyreport.data.repository.MyServerRepo
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 import com.anas.weeklyreport.shared.BottomSheetBodyType
+import com.anas.weeklyreport.shared.ReportActionType.BOOKMARK
+import com.anas.weeklyreport.shared.ReportActionType.RESTORE
+import com.anas.weeklyreport.shared.ReportActionType.TRASH
 import com.anas.weeklyreport.shared.ReportListType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,9 +37,9 @@ class HomeViewmodel @Inject constructor(
     private var isPageInitialized = false
     val state = MutableStateFlow(HomeScreenState())
 
-    fun init(){
+    fun init(deviceLanguage: String) {
         if (!isPageInitialized){
-            getAppLanguage()
+            getAppLanguage(deviceLanguage)
             getAllReports()
             isPageInitialized = true
         }
@@ -96,6 +100,7 @@ class HomeViewmodel @Inject constructor(
             HomeScreenEvent.OnTrashDrawerClick -> {
                 state.update { body ->
                     body.copy(
+                        isNavigationDrawerOpen = false,
                         screen = AppScreen.REPORT_LIST_SCREEN.toString() + "/${ReportListType.TRASH}",
                     )
                 }
@@ -130,6 +135,8 @@ class HomeViewmodel @Inject constructor(
                 saveAppLanguageToCache(event.language)
 
             }
+
+            is HomeScreenEvent.RequestNotificationMessage -> state.update { body -> body.copy(isNotificationMessageShown = event.isShown) }
         }
     }
 
@@ -169,7 +176,7 @@ class HomeViewmodel @Inject constructor(
 
     private fun restoreReport() {
         state.value.currentReport.isInTrash = false
-        saveReport("restore")
+        saveReport(RESTORE)
     }
 
     private fun saveReport(action:String){
@@ -178,24 +185,24 @@ class HomeViewmodel @Inject constructor(
             myServer.saveReport(state.value.currentReport).onEach { stateFlow ->
                 when(stateFlow){
                     is DataState.Success -> {
-
                         when(action){
-                            "trash" ->{
-                                toastMessage = "Report successfully moved to trash"
+                            TRASH ->{
+                                toastMessage = "Report moved to trash"
                             }
-                            "bookmark" -> {
+                            BOOKMARK -> {
                                 toastMessage = if (stateFlow.data.isBookmarked)
-                                    "Report successfully added to bookmarks"
+                                    "Report added to bookmarks"
                                 else
-                                    "Report successfully removed from bookmarks"
+                                    "Report removed from bookmarks"
                             }
-                            "restore" -> {
-                                toastMessage = "Report successfully restored"
+                            RESTORE -> {
+                                toastMessage = "Report restored"
                             }
 
                         }
                         state.update { body ->
                             body.copy(
+                                isNotificationMessageShown = true,
                                 toastMessage = toastMessage,
                                 screenLoading = false
                             )
@@ -203,13 +210,13 @@ class HomeViewmodel @Inject constructor(
                     }
                     is DataState.Error -> {
                         when(action){ // roll back any changes
-                            "trash" ->{
+                            TRASH ->{
                                 state.value.currentReport.isInTrash = false
                             }
-                            "bookmark" -> {
+                            BOOKMARK -> {
                                 state.value.currentReport.isBookmarked = !state.value.currentReport.isBookmarked
                             }
-                            "restore" -> {
+                            RESTORE -> {
                                 state.value.currentReport.isInTrash = true
                             }
 
@@ -233,27 +240,25 @@ class HomeViewmodel @Inject constructor(
         }
     }
 
-    private fun getAppLanguage() {
-        val result = myServer.getDataFromLocalCache("app_language")
-        if (result != null){
-            appLanguage = result
-            state.update { body ->
-                body.copy(
-                    appLanguage = appLanguage
-                )
-            }
+    private fun getAppLanguage(deviceLanguage: String) {
+        appLanguage = myServer.getDataFromLocalCache(AppData.sharedPreferencesLanguageKey) ?: deviceLanguage
+        state.update { body ->
+            body.copy(
+                isAppLanguageLoading = false,
+                appLanguage = appLanguage
+            )
         }
     }
 
     private fun addReportToBookmark() {
         state.value.currentReport.isBookmarked = !state.value.currentReport.isBookmarked
-        saveReport("bookmark")
+        saveReport(BOOKMARK)
     }
 
 
     private fun moveReportToTrash(){
         state.value.currentReport.isInTrash = true
-        saveReport("trash")
+        saveReport(TRASH)
     }
     private fun deleteItem() {
         viewModelScope.launch {
@@ -263,7 +268,7 @@ class HomeViewmodel @Inject constructor(
                         reports.removeIf { it.id == state.value.currentReport.id }
                         state.update { body ->
                             body.copy(
-                                toastMessage = "Report successfully deleted",
+                                toastMessage = "Report deleted",
                                 screenLoading = false
                             )
                         }
@@ -271,7 +276,7 @@ class HomeViewmodel @Inject constructor(
                     is DataState.Error -> {
                         state.update { body ->
                             body.copy(
-                                toastMessage = stateFlow.exception.message!!,
+                                toastMessage = "Failed to delete report",
                                 screenLoading = false
                             )
                         }
@@ -290,7 +295,7 @@ class HomeViewmodel @Inject constructor(
 
     private fun getDocument(reportId:String){
         viewModelScope.launch {
-            myServer.getDocument(reportId, "test").onEach { stateFlow ->
+            myServer.getDocument(reportId, state.value.currentReport.name).onEach { stateFlow ->
                 when(stateFlow){
                     is DataState.Success -> {
                         state.update { body ->

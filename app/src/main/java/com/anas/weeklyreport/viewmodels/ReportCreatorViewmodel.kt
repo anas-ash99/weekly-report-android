@@ -5,13 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.AppData.allReports
-import com.anas.weeklyreport.domain.DataState
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
-import com.anas.weeklyreport.domain.ReportCreatorScreenStates
-import com.anas.weeklyreport.domain.repository.MyServerRepo
+import com.anas.weeklyreport.data.DataState
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
+import com.anas.weeklyreport.data.ReportCreatorScreenStates
+import com.anas.weeklyreport.data.repository.MyServerRepo
 import com.anas.weeklyreport.extension_methods.stringToLocalDate
 import com.anas.weeklyreport.model.Description
 import com.anas.weeklyreport.model.Report
+import com.anas.weeklyreport.shared.TextFieldName.FROM_DATE
+import com.anas.weeklyreport.shared.TextFieldName.REPORT_NAME
+import com.anas.weeklyreport.shared.TextFieldName.REPORT_NUMBER
+import com.anas.weeklyreport.shared.TextFieldName.TO_DATE
+import com.anas.weeklyreport.shared.TextFieldName.WEEK
+import com.anas.weeklyreport.shared.TextFieldName.YEAR
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -39,19 +45,23 @@ class ReportCreatorViewmodel @Inject constructor(
         }
     }
 
-    fun onEvent(event:ReportCreatorScreenEvent){
+    fun onEvent(event: ReportCreatorScreenEvent){
         when(event){
-            ReportCreatorScreenEvent.OnAddDescriptionClick -> {
+            is ReportCreatorScreenEvent.OnAddDescriptionClick -> {
                 state.update { state -> state.copy(
+                    dialogDescriptionItem = Description(),
+                    isDialogTypeAdd = true,
+                    currentWeekDayItem = event.day,
                     isAddDescriptionDialogShown = true,
-                    isSaveButtonInAddDescriptionDialogShown = false
                 ) }
             }
             is ReportCreatorScreenEvent.OnEditDescriptionClick -> {
                 state.update { state -> state.copy(
+                    isDialogTypeAdd = false,
+                    descriptionItemIndex = event.index,
+                    currentWeekDayItem = event.day,
                     isAddDescriptionDialogShown = true,
                     dialogDescriptionItem = event.description,
-                    isSaveButtonInAddDescriptionDialogShown = false
                 ) }
             }
             ReportCreatorScreenEvent.OnReportSaveClick -> {
@@ -63,39 +73,20 @@ class ReportCreatorViewmodel @Inject constructor(
                 }
 
             }
-            is ReportCreatorScreenEvent.OnTextFieldValueChange -> handleTextValueChange(event.field, event.value)
+            is ReportCreatorScreenEvent.OnTextFieldValueChange -> handleTextValueChange(event.fieldName, event.value )
 
             ReportCreatorScreenEvent.OnAddDialogDismiss -> {
                 state.update { state -> state.copy(
                     isAddDescriptionDialogShown = false,
-                    dialogDescriptionItem = Description()
                 ) }
             }
 
-            is ReportCreatorScreenEvent.OnSaveDescriptionClick -> {
+            ReportCreatorScreenEvent.OnSaveDescriptionClick -> updateDayDescription()
 
-                report.value.weekdayDescription.forEach { des->
-                    if (des.day == state.value.currentWeekDayItem){
-                        if (state.value.isTypeAdd){
-                            des.descriptions.add(event.description)
-                        }else{
-                            des.descriptions[state.value.descriptionItemIndex] = event.description
-                        }
-                    }
-                }
-                state.update { state ->
-                    state.copy(
-                        isAddDescriptionDialogShown = false,
-                        dialogDescriptionItem = Description(),
-                        weekDayListTrigger = state.weekDayListTrigger + 1
-                    )
-                }
-            }
 
             is ReportCreatorScreenEvent.OnDescriptionDialogValueChange -> {
                 state.update { state -> state.copy(
                     dialogDescriptionItem = Description(description = event.value, hours = state.dialogDescriptionItem.hours),
-                    isSaveButtonInAddDescriptionDialogShown = event.value.isNotBlank() && state.dialogDescriptionItem.hours.isNotBlank()
                 ) }
 
 
@@ -103,7 +94,7 @@ class ReportCreatorViewmodel @Inject constructor(
             is ReportCreatorScreenEvent.OnHoursDialogValueChange -> {
                 state.update { state -> state.copy(
                     dialogDescriptionItem = Description(description = state.dialogDescriptionItem.description, hours = event.value ),
-                    isSaveButtonInAddDescriptionDialogShown = event.value.isNotBlank() && state.dialogDescriptionItem.description.isNotBlank()
+
                 ) }
             }
             is ReportCreatorScreenEvent.RequestDatePicker -> {
@@ -111,37 +102,19 @@ class ReportCreatorViewmodel @Inject constructor(
                     isDatePickerShown = event.showDatePicker,
                     currentDatePickerField = event.field
                 ) }
-
-                if (event.showDatePicker){
-                    when(state.value.currentDatePickerField){
-                        "From date"->{
-                            if (report.value.fromDate.isNotBlank()){
-                                state.update { state -> state.copy(
-                                    selectedDatePicker = report.value.fromDate.stringToLocalDate()
-                                ) }
-                            }
-                        }
-                        "To date" -> {
-                            if (report.value.toDate.isNotBlank()){
-                                state.update { state -> state.copy(
-                                    selectedDatePicker = report.value.toDate.stringToLocalDate()
-                                ) }
-                            }
-                        }
-                    }
-                }
+                 assignDateToDatePicker(event.showDatePicker)
             }
 
             is ReportCreatorScreenEvent.OnDateSelection -> {
                 when(state.value.currentDatePickerField){
-                    "From date"->{
+                    FROM_DATE->{
                        report.update { doc ->
                            doc.copy(
                                fromDate = event.date
                            )
                        }
                     }
-                    "To date" -> {
+                    TO_DATE -> {
                         report.update { doc ->
                             doc.copy(
                                 toDate = event.date
@@ -184,40 +157,82 @@ class ReportCreatorViewmodel @Inject constructor(
             }
 
             ReportCreatorScreenEvent.OnPreviewDialogConfirmClick -> {
-                println("res : " + state.value.previewWeekDays)
                 report.update { body -> body.copy(
                     weekdayDescription = state.value.previewWeekDays
                 ) }
 
             }
+            is ReportCreatorScreenEvent.RequestNotificationMessage ->  state.update { state -> state.copy(isNotificationMessageShown = event.isShown) }
+            is ReportCreatorScreenEvent.RequestContextMenu -> state.update { state -> state.copy(isContextMenuShown = event.isShown) }
+        }
+    }
+
+    private fun updateDayDescription() {
+       val description = Description(state.value.dialogDescriptionItem.description, state.value.dialogDescriptionItem.hours)
+        report.value.weekdayDescription.forEach { des->
+            if (des.day == state.value.currentWeekDayItem){
+                if (state.value.isDialogTypeAdd){
+                    des.descriptions.add(description)
+                }else{
+                    des.descriptions[state.value.descriptionItemIndex] = description
+                }
+            }
+        }
+        state.update { state ->
+            state.copy(
+                isAddDescriptionDialogShown = false,
+                dialogDescriptionItem = Description(),
+                weekDayListTrigger = state.weekDayListTrigger + 1
+            )
+        }
+    }
+
+    private fun assignDateToDatePicker(showDatePicker: Boolean) {
+        if (showDatePicker){
+            when(state.value.currentDatePickerField){
+                FROM_DATE->{
+                    if (report.value.fromDate.isNotBlank()){
+                        state.update { state -> state.copy(
+                            selectedDatePicker = report.value.fromDate.stringToLocalDate()
+                        ) }
+                    }
+                }
+                TO_DATE -> {
+                    if (report.value.toDate.isNotBlank()){
+                        state.update { state -> state.copy(
+                            selectedDatePicker = report.value.toDate.stringToLocalDate()
+                        ) }
+                    }
+                }
+            }
         }
     }
 
 
-    private fun handleTextValueChange(field:String, value:String){
-        when(field.lowercase()){
-            "report name*" ->{
+    private fun handleTextValueChange(field: String, value: String){
+        when(field){
+            REPORT_NAME ->{
                 report.update { doc ->
                     doc.copy(
                         name = value
                     )
                 }
             }
-            "report number*"->{
+            REPORT_NUMBER->{
                 report.update { doc ->
                     doc.copy(
                         reportNumber = value
                     )
                 }
             }
-            "year" -> {
+            YEAR -> {
                 report.update { doc ->
                     doc.copy(
                         year = value
                     )
                 }
             }
-            "week" ->{
+            WEEK ->{
                 report.update { doc ->
                     doc.copy(
                         calenderWeak = value
@@ -233,7 +248,6 @@ class ReportCreatorViewmodel @Inject constructor(
                 when(stateFlow){
                     is DataState.Success ->{
                         val aiResponse = stateFlow.data
-
                         state.update { body ->
                             body.copy(
                                 previewWeekDays = aiResponse.weekdayDescription,
@@ -263,7 +277,6 @@ class ReportCreatorViewmodel @Inject constructor(
 
     private fun saveReportRemotely(type:String) {
         viewModelScope.launch {
-            println("click save")
             myServerRepo.saveReport(report.value).onEach { stateFlow ->
                 when(stateFlow){
                     is DataState.Success -> {

@@ -1,7 +1,7 @@
 package com.anas.weeklyreport.presentaion.report_creator
 
-import android.annotation.SuppressLint
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,17 +35,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
+import com.anas.weeklyreport.model.ui.ReportTextField
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
 import com.anas.weeklyreport.presentaion.LoadingSpinner
+import com.anas.weeklyreport.presentaion.MyNotificationMessage
 import com.anas.weeklyreport.presentaion.report_creator.dialogs.AddDescriptionDialog
 import com.anas.weeklyreport.presentaion.report_creator.dialogs.AiAssistantDialog
 import com.anas.weeklyreport.presentaion.report_creator.dialogs.MyDatePicker
 import com.anas.weeklyreport.presentaion.report_creator.dialogs.ReportDetailsDialog
 import com.anas.weeklyreport.shared.AppColors
+import com.anas.weeklyreport.shared.TextFieldName
 import com.anas.weeklyreport.viewmodels.ReportCreatorViewmodel
 
-@SuppressLint("FrequentlyChangedStateReadInComposition", "UnrememberedMutableState")
+
 @Composable
 fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
 
@@ -53,8 +57,15 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
     val context = LocalContext.current
     viewmodel.init(reportId)
     val state = viewmodel.state.collectAsState()
-    val document by viewmodel.report.collectAsState()
-
+    val report by viewmodel.report.collectAsState()
+    val textFields = initTextFields(
+        name = report.name,
+        reportNumber = report.reportNumber,
+        year = report.year,
+        calenderWeak = report.calenderWeak,
+        fromDate = report.fromDate,
+        toDate = report.toDate
+    )
     LaunchedEffect(state.value.screen){ // launchedEffect for handling navigation
         if (state.value.screen.isNotBlank()){
             navController?.popBackStack()
@@ -79,7 +90,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 ScreenAppBar(navController = navController, onEvent =  viewmodel::onEvent)
             },
             floatingActionButton = {
-                val saveButtonEnabled:  Boolean = document.name.isNotBlank()  && document.reportNumber.isNotBlank()
+                val saveButtonEnabled:  Boolean = report.name.isNotBlank()  && report.reportNumber.isNotBlank()
                 Button(
                     onClick = { viewmodel.onEvent(ReportCreatorScreenEvent.OnReportSaveClick) },
                     colors = ButtonDefaults.buttonColors(AppColors.APP_MAIN_COLOR.color),
@@ -88,7 +99,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                         .fillMaxWidth(0.8f)
                         .height(42.dp)
                 ) {
-                    Text(text = stringResource(id = R.string.save), color = Color.White, fontSize = 18.sp)
+                    Text(modifier = Modifier.clickable { viewmodel.onEvent(ReportCreatorScreenEvent.RequestContextMenu(true)) }, text = stringResource(id = R.string.save), color = Color.White, fontSize = 18.sp)
                 }
             },
             floatingActionButtonPosition = FabPosition.Center // Place in the center
@@ -99,23 +110,13 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()))
             {
-                CustomStyledTextField(text = document.name, onEvent = viewmodel::onEvent, label = stringResource(id = R.string.report_name), keyboardType = KeyboardType.Text)
-                CustomStyledTextField(text = document.reportNumber,onEvent = viewmodel::onEvent, label = stringResource(id = R.string.report_number))
-                CustomStyledTextField(text = document.year,onEvent = viewmodel::onEvent, label = stringResource(id = R.string.year))
-                CustomStyledTextField(text = document.calenderWeak,onEvent = viewmodel::onEvent, label = stringResource(id = R.string.week))
-                DateTextField(
-                    label = stringResource(id = R.string.from_date),
-                    state = state.value,
-                    onEvent = viewmodel::onEvent,
-                    text = document.fromDate
-                )
-
-                DateTextField(
-                    label = stringResource(id = R.string.to_date),
-                    text = document.toDate,
-                    state = state.value,
-                    onEvent = viewmodel::onEvent
-                )
+                textFields.forEach { item ->
+                    if (!item.isDate){
+                        CustomStyledTextField(text = item.value, onEvent = viewmodel::onEvent, label = stringResource(id = item.label) , keyboardType = item.type, name = item.name)
+                    }else{
+                        DateTextField(label = stringResource(id = item.label), text = item.value, name = item.name, onEvent = viewmodel::onEvent)
+                    }
+                }
 
                 Row (
                     modifier = Modifier.fillMaxWidth(),
@@ -135,7 +136,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                         )
                     }
                 }
-                document.weekdayDescription.forEach { item ->
+                report.weekdayDescription.forEach { item ->
                     WeekdayItem(
                         day= item.day,
                         data = item,
@@ -153,8 +154,54 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 MyDatePicker(state = state.value, onEvent = viewmodel::onEvent)
             }
         }
+
+
         LoadingSpinner(isVisible = state.value.screenLoading)
+
     }
+    MyNotificationMessage(message = state.value.toastMessage, isVisible = state.value.isNotificationMessageShown){
+            viewmodel.onEvent(ReportCreatorScreenEvent.RequestNotificationMessage(false))
+    }
+}
+fun initTextFields (name:String, reportNumber:String, year:String, calenderWeak:String, fromDate:String, toDate:String):List<ReportTextField> {
+    return listOf(
+        ReportTextField(
+            value = name,
+            name = TextFieldName.REPORT_NAME,
+            label = R.string.report_name,
+            type = KeyboardType.Text,
+        ),
+        ReportTextField(
+            value = reportNumber,
+            name = TextFieldName.REPORT_NUMBER,
+            label = R.string.report_number,
+        ),
+        ReportTextField(
+            value = year,
+            name = TextFieldName.YEAR,
+            label = R.string.year,
+        ),
+        ReportTextField(
+            value = calenderWeak,
+            name = TextFieldName.WEEK,
+            label = R.string.week,
+        ),
+        ReportTextField(
+            value = fromDate,
+            name = TextFieldName.FROM_DATE,
+            label = R.string.from_date,
+            type = KeyboardType.Text,
+            isDate = true
+        ),
+        ReportTextField(
+            value = toDate,
+            name = TextFieldName.TO_DATE,
+            label = R.string.to_date,
+            type = KeyboardType.Text,
+            isDate = true
+        ),
+
+        )
 }
 
 @Preview

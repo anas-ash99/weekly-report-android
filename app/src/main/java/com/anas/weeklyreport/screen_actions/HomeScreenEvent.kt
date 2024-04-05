@@ -18,5 +18,6 @@ sealed interface HomeScreenEvent{
     object OnDeleteReportClick:HomeScreenEvent
     data class ChangeBottomSheetType(val type:BottomSheetBodyType):HomeScreenEvent
     data class OnLanguageSelection(val language:String):HomeScreenEvent
+    data class RequestNotificationMessage(val isShown:Boolean):HomeScreenEvent
     object OnLanguageDrawerClick:HomeScreenEvent
 }

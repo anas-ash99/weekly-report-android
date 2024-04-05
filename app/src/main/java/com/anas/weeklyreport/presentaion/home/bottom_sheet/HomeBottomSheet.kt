@@ -5,7 +5,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.anas.weeklyreport.domain.HomeScreenState
+import com.anas.weeklyreport.data.HomeScreenState
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 import com.anas.weeklyreport.shared.BottomSheetBodyType
 

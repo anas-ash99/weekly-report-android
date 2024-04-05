@@ -23,7 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.domain.HomeScreenState
+import com.anas.weeklyreport.data.HomeScreenState
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 
 @Composable

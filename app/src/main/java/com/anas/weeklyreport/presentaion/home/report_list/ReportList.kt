@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.domain.HomeScreenState
+import com.anas.weeklyreport.data.HomeScreenState
 import com.anas.weeklyreport.model.Report
 import com.anas.weeklyreport.presentaion.home.ShimmerListItem
 import com.anas.weeklyreport.presentaion.home.bottom_sheet.HomeBottomSheet
@@ -56,7 +56,7 @@ fun ReportList(
     }
     LaunchedEffect(state.toastMessage){
         if (state.toastMessage.isNotBlank()){
-            Toast.makeText(context, state.toastMessage, Toast.LENGTH_SHORT).show()
+//            Toast.makeText(context, state.toastMessage, Toast.LENGTH_SHORT).show()
             state.toastMessage = ""
         }
     }

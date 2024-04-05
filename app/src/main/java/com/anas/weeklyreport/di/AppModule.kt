@@ -2,8 +2,8 @@ package com.anas.weeklyreport.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.anas.weeklyreport.domain.repository.MyServerImpl
-import com.anas.weeklyreport.domain.repository.MyServerRepo
+import com.anas.weeklyreport.data.repository.MyServerImpl
+import com.anas.weeklyreport.data.repository.MyServerRepo
 import com.anas.weeklyreport.remote.OpenAiApi
 import com.anas.weeklyreport.remote.ReportApi
 import dagger.Module

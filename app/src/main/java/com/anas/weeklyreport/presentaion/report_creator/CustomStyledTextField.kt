@@ -7,27 +7,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.anas.weeklyreport.domain.ReportCreatorScreenEvent
+import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
 
 @Composable
 fun CustomStyledTextField(
     onEvent: (ReportCreatorScreenEvent) -> Unit,
     text:String,
     label:String,
+    name:String,
     keyboardType: KeyboardType = KeyboardType.Number
 ){
-
+    val context = LocalContext.current
     TextField(
         value = text,
-        onValueChange = { onEvent(ReportCreatorScreenEvent.OnTextFieldValueChange(it,label)) },
+        onValueChange = { onEvent(ReportCreatorScreenEvent.OnTextFieldValueChange(it,name)) },
         label = { Text(label) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
