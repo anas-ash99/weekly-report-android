@@ -1,4 +1,4 @@
-package com.anas.weeklyreport.presentaion.home.bottom_sheet
+package com.anas.weeklyreport.presentaion.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,13 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.R
-import com.anas.weeklyreport.screen_actions.HomeScreenEvent
+import com.anas.weeklyreport.screen_actions.SettingsScreenEvent
 import com.anas.weeklyreport.shared.AppColors
 
 
 @Composable
 fun ChangeLanguageSheetBody(
-    onEvent:(HomeScreenEvent) ->Unit,
+    onEvent:(SettingsScreenEvent) ->Unit,
 ) {
     var languages = listOf(
         Language(
@@ -38,12 +38,13 @@ fun ChangeLanguageSheetBody(
             name = stringResource(id = R.string.german),
             code = "de",
             isSelected = AppData.appLanguage == "de"
-        ))
+        )
+    )
     Column(
         modifier = Modifier.padding(bottom = 20.dp)
     ){
         Text(text = stringResource(id = R.string.language_dialog_title), fontWeight = FontWeight.Bold, fontSize = 22.sp, modifier = Modifier.padding(bottom = 20.dp, start = 25.dp))
-        Divider(color = AppColors.DIVIDER.color)
+        Divider(color = AppColors.DIVIDER)
 
         if (AppData.appLanguage == "de"){
              languages = languages.reversed()
@@ -51,7 +52,7 @@ fun ChangeLanguageSheetBody(
 
         languages.forEach { item ->
             TextButton(onClick = {
-                onEvent(HomeScreenEvent.OnLanguageSelection(item.code))
+                onEvent(SettingsScreenEvent.OnLanguageSelection(item.code))
             }) {
                 Row(
                     modifier = Modifier.padding(start = 10.dp),
@@ -59,7 +60,7 @@ fun ChangeLanguageSheetBody(
                     horizontalArrangement = Arrangement.Center
                 ) {
 
-                    RadioButton(selected = item.isSelected , onClick = {    onEvent(HomeScreenEvent.OnLanguageSelection(item.code)) }, colors = RadioButtonDefaults.colors(selectedColor = AppColors.APP_MAIN_COLOR.color))
+                    RadioButton(selected = item.isSelected , onClick = {    onEvent(SettingsScreenEvent.OnLanguageSelection(item.code)) }, colors = RadioButtonDefaults.colors(selectedColor = AppColors.APP_MAIN_COLOR))
                     Text(
                         text = item.name,
                         modifier = Modifier

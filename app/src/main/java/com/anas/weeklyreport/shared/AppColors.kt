@@ -2,12 +2,11 @@ package com.anas.weeklyreport.shared
 
 import androidx.compose.ui.graphics.Color
 
-enum class  AppColors(val color:Color){
-    APP_MAIN_COLOR(Color(0xFF326d8b)),
-    DIVIDER(Color(0xF000000)),
-    CANCEL_BUTTON_COLOR(Color(0xA4FF0000))
-}
+object AppColors{
+    val APP_MAIN_COLOR= Color(0xFF326d8b)
+    val DIVIDER = Color(0xF000000)
+    val CANCEL_BUTTON_COLOR = Color(0xA4FF0000)
+    val NotificationErrorColor = Color(0xFFFA2929)
+    val NotificationSuccessColor = Color(0xFF029C3F)
 
-sealed interface Test{
-    data class AppMainColor(val color: Color = Color(0xFF326d8b)): Test
 }

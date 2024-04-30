@@ -45,7 +45,7 @@ fun AddDescriptionDialog(
                     onClick = {
                         onEvent(ReportCreatorScreenEvent.OnSaveDescriptionClick)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR),
                     enabled = state.dialogDescriptionItem.description.isNotBlank() && state.dialogDescriptionItem.hours.isNotBlank()
                 ) {
                     Text(stringResource(id = R.string.save))
@@ -56,7 +56,7 @@ fun AddDescriptionDialog(
                     onClick = {
                         onEvent(ReportCreatorScreenEvent.OnAddDialogDismiss)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR),
                 ) {
                     Text(stringResource(id = R.string.cancel))
                 }

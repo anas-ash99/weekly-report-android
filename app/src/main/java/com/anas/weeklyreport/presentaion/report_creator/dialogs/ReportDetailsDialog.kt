@@ -1,5 +1,6 @@
 package com.anas.weeklyreport.presentaion.report_creator.dialogs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -87,7 +89,7 @@ fun ReportDetailsDialog(weekdayDescription: List<Weekday>, state:ReportCreatorSc
                     onClick = {
                         onEvent(ReportCreatorScreenEvent.OnPreviewDialogRequest(false))
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR),
                 ) {
                     Text(stringResource(id = R.string.cancel))
                 }
@@ -99,7 +101,7 @@ fun ReportDetailsDialog(weekdayDescription: List<Weekday>, state:ReportCreatorSc
                         onEvent(ReportCreatorScreenEvent.OnPreviewDialogConfirmClick)
                         onEvent(ReportCreatorScreenEvent.OnPreviewDialogRequest(false))
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR),
                 ) {
                     Text(text = stringResource(id = R.string.confirm))
                 }

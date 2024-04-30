@@ -1,7 +1,9 @@
 package com.anas.weeklyreport.extension_methods
 
+import android.util.Log
 import com.anas.weeklyreport.shared.ReportListType
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 fun String.reformatDate(pattern: String = "dd/MM/yyyy"): String {
@@ -43,6 +45,16 @@ fun String.translateListType():String{
     return type
 }
 
+fun String.formatCreatedAt(pattern: String = "MMM d,yyyy"): String {
+    return try {
+        val originalDateTime = LocalDateTime.parse(this)
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+        originalDateTime.format(formatter)
+    }catch (e:Exception){
+        Log.e("formatCreatedAt", e.message, e)
+        ""
+    }
+}
 
 
 

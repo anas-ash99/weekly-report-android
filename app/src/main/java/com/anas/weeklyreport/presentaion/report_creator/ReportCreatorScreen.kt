@@ -1,7 +1,7 @@
 package com.anas.weeklyreport.presentaion.report_creator
 
-import android.widget.Toast
-import androidx.compose.foundation.clickable
+
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.R
 import com.anas.weeklyreport.model.ui.ReportTextField
 import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
@@ -50,13 +48,13 @@ import com.anas.weeklyreport.shared.TextFieldName
 import com.anas.weeklyreport.viewmodels.ReportCreatorViewmodel
 
 
+
 @Composable
 fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
 
     val viewmodel:ReportCreatorViewmodel = hiltViewModel()
-    val context = LocalContext.current
     viewmodel.init(reportId)
-    val state = viewmodel.state.collectAsState()
+    val state by viewmodel.state.collectAsState()
     val report by viewmodel.report.collectAsState()
     val textFields = initTextFields(
         name = report.name,
@@ -66,25 +64,26 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
         fromDate = report.fromDate,
         toDate = report.toDate
     )
-    LaunchedEffect(state.value.screen){ // launchedEffect for handling navigation
-        if (state.value.screen.isNotBlank()){
+
+
+    LaunchedEffect(state.screen){ // launchedEffect for handling navigation
+        if (state.screen.isNotBlank()){
             navController?.popBackStack()
-
         }
     }
 
-    LaunchedEffect(state.value.toastMessage){
-        if (state.value.toastMessage.isNotBlank()){
-            Toast.makeText(context, state.value.toastMessage, Toast.LENGTH_SHORT).show()
-           viewmodel.restToastMessage()
-        }
-    }
+//    LaunchedEffect(state.toastMessage){
+//        if (state.toastMessage != 0){
+//            Toast.makeText(context, stringResource(id = state.toastMessage), Toast.LENGTH_SHORT).show()
+//           viewmodel.restToastMessage()
+//        }
+//    }
 
 
     Surface (modifier = Modifier.fillMaxSize()) {
 
-        ReportDetailsDialog(weekdayDescription = state.value.previewWeekDays, state = state.value, onEvent = viewmodel::onEvent)
-        AiAssistantDialog(state = state.value, onEvent = viewmodel::onEvent)
+        ReportDetailsDialog(weekdayDescription = state.previewWeekDays, state = state, onEvent = viewmodel::onEvent)
+        AiAssistantDialog(state = state, onEvent = viewmodel::onEvent)
         Scaffold (
             topBar = {
                 ScreenAppBar(navController = navController, onEvent =  viewmodel::onEvent)
@@ -93,13 +92,13 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 val saveButtonEnabled:  Boolean = report.name.isNotBlank()  && report.reportNumber.isNotBlank()
                 Button(
                     onClick = { viewmodel.onEvent(ReportCreatorScreenEvent.OnReportSaveClick) },
-                    colors = ButtonDefaults.buttonColors(AppColors.APP_MAIN_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(AppColors.APP_MAIN_COLOR),
                     enabled = saveButtonEnabled ,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(42.dp)
                 ) {
-                    Text(modifier = Modifier.clickable { viewmodel.onEvent(ReportCreatorScreenEvent.RequestContextMenu(true)) }, text = stringResource(id = R.string.save), color = Color.White, fontSize = 18.sp)
+                    Text(text = stringResource(id = R.string.save), color = Color.White, fontSize = 18.sp)
                 }
             },
             floatingActionButtonPosition = FabPosition.Center // Place in the center
@@ -125,7 +124,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 ){
                     Text(stringResource(id = R.string.weekday_descriptions), style = MaterialTheme.typography.headlineSmall)
                     TextButton(onClick = {
-                        state.value.previewWeekDays = viewmodel.report.value.weekdayDescription
+                        state.previewWeekDays = viewmodel.report.value.weekdayDescription
                         viewmodel.onEvent(ReportCreatorScreenEvent.OnPreviewDialogRequest(true))
                     }) {
                         Text(
@@ -140,7 +139,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                     WeekdayItem(
                         day= item.day,
                         data = item,
-                        state = state.value,
+                        state = state,
                         onEvent = viewmodel::onEvent
                     )
                 }
@@ -149,17 +148,20 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                     .height(45.dp))
                 AddDescriptionDialog(
                     onEvent = viewmodel::onEvent,
-                    state = state.value,
+                    state = state,
                 )
-                MyDatePicker(state = state.value, onEvent = viewmodel::onEvent)
+                MyDatePicker(state = state, onEvent = viewmodel::onEvent)
             }
         }
 
 
-        LoadingSpinner(isVisible = state.value.screenLoading)
+        LoadingSpinner(isVisible = state.screenLoading)
 
     }
-    MyNotificationMessage(message = state.value.toastMessage, isVisible = state.value.isNotificationMessageShown){
+    MyNotificationMessage(
+        message = if (state.notificationMessage != 0 ) stringResource(id = state.notificationMessage) else "",
+        color = state.notificationColor,
+        isVisible = state.isNotificationMessageShown){
             viewmodel.onEvent(ReportCreatorScreenEvent.RequestNotificationMessage(false))
     }
 }

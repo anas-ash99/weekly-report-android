@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="gcp_id">826674401965-9ea84ku58sf4b98eja3q5l46ansiuk3m.apps.googleusercontent.com</string>
     <string name="app_name">Wochenbericht</string>
     <string name="create_report">Bericht erstellen</string>
     <string name="save">Speichern</string>
@@ -43,4 +44,42 @@
     <string name="remove_from_bookmark">Aus Lesezeichen entfernen</string>
     <string name="edit">Bearbeiten</string>
     <string name="download">Herunterladen</string>
+    <string name="getAllReportOfflineMessage">Offline. Berichte werden bei Wiederverbindung aktualisiert.</string>
+    <string name="unknownErrorMessage">Unerwarteter Fehler aufgetreten. Bitte erneut versuchen.</string>
+    <string name="failedToDeleteReportMessage">Bericht konnte nicht gelöscht werden. Bitte erneut versuchen.</string>
+    <string name="getDocumentErrorMessage">Dokument konnte nicht heruntergeladen werden. Bitte Verbindung überprüfen und erneut versuchen.</string>
+    <string name="aiReportGeneratorErrorMessage">Problem beim Erstellen des Berichts aufgetreten. Bitte erneut versuchen.</string>
+    <string name="offlineSaveReportMessage">Offline. Bericht lokal gespeichert und wird bei Wiederverbindung synchronisiert.</string>
+    <string name="documnetDownloadFailMessage">Dokumentdownload fehlgeschlagen. Bitte erneut versuchen.</string>
+    <string name="reportDeletedMessage">Bericht erfolgreich gelöscht.</string>
+    <string name="failedToChangeLanuag">Sprache konnte nicht geändert werden. Bitte erneut versuchen.</string>
+    <string name="report_moved_to_trash">Bericht in den Papierkorb verschoben.</string>
+    <string name="report_moved_to_bookmarks">Bericht zu den Lesezeichen hinzugefügt.</string>
+    <string name="report_removed_to_bookmarks">Bericht aus den Lesezeichen entfernt.</string>
+    <string name="report_restored">Bericht erfolgreich wiederhergestellt.</string>
+    <string name="failed_to_update_report">Bericht konnte nicht aktualisiert werden. Bitte erneut versuchen.</string>
+    <string name="repor_saved_message">Bericht erfolgreich gespeichert</string>
+    <string name="reports_network_error_message">Netzwerkfehler aufgetreten, Daten aus lokaler Datenbank durchsuchen</string>
+    <string name="having_trouble_connecting_error_message">Verbindungsprobleme.</string>
+    <string name="network_error_message">Netzwerkfehler, Bericht wird später synchronisiert</string>
+    <string name="backup_and_restore"><![CDATA[Sicherung & Wiederherstellung]]></string>
+    <string name="sign_and_synchronize">Anmelden und Daten synchronisieren</string>
+    <string name="sign_out">Abmelden</string>
+    <string name="signed_out_successfully">Erfolgreich abgemeldet</string>
+    <string name="signed_in_successfully">Erfolgreich angemeldet</string>
+    <string name="syncing">Synchronisierung…</string>
+    <string name="edited_profile_title">Profil bearbeiten</string>
+    <string name="full_name_label">Vollständiger Name</string>
+    <string name="company_label">Unternehmen</string>
+    <string name="department_label">Abteilung</string>
+    <string name="email_label">E-Mail</string>
+    <string name="profile">Profil</string>
+    <string name="settings">Einstellungen</string>
+    <string name="rate_app">App bewerten</string>
+    <string name="share">Teilen</string>
+    <string name="privacy_policy">Datenschutzrichtlinie</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="account_delete_error_message">Coundlt delete account, please try again later</string>
+    <string name="delete_account_diaolg_message">Deleting your account will remove all of your information from our database. This Cannot be undone!</string>
+    <string name="email_sent_successfully">Email sent successfully</string>
 </resources>

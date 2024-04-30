@@ -61,6 +61,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.browser:browser:1.8.0")
+    val roomVersion = "2.6.1"
 
     implementation("androidx.activity:activity-ktx:1.8.2") // Check for the latest version
     implementation("androidx.fragment:fragment-ktx:1.6.2") // Check for the latest version
@@ -87,7 +89,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-
+    /// google
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
     /// dagger hilt
     implementation("com.google.dagger:hilt-android:2.49")
     kapt("com.google.dagger:hilt-android-compiler:2.48")
@@ -97,6 +100,16 @@ dependencies {
     implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.2.0")
     implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.2.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    ///// room
+    implementation("androidx.room:room-runtime:$roomVersion")
+    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion") // Use latest version
+    // Kotlin Coroutines for Room
+    implementation("androidx.room:room-ktx:$roomVersion")
 }
 
 
+kapt {
+    correctErrorTypes = true
+}

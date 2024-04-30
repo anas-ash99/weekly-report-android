@@ -43,7 +43,7 @@ fun WeekdayItem(
             onClick = {
                 onEvent(ReportCreatorScreenEvent.OnAddDescriptionClick(day))
             },
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR.color),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR),
             modifier = Modifier.padding(top = 5.dp)
 
         ) {

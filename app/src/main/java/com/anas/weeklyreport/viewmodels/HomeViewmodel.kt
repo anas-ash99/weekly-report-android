@@ -1,7 +1,11 @@
 package com.anas.weeklyreport.viewmodels
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.util.Log
+import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,16 +13,25 @@ import com.anas.weeklyreport.AppData
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.AppData.allReports
 import com.anas.weeklyreport.AppData.appLanguage
-import com.anas.weeklyreport.data.DataState
+import com.anas.weeklyreport.AppData.loggedInUser
+import com.anas.weeklyreport.R
+import com.anas.weeklyreport.data.Result
 import com.anas.weeklyreport.data.HomeScreenState
-import com.anas.weeklyreport.data.repository.MyServerRepo
+import com.anas.weeklyreport.data.repository.ReportRepository
+import com.anas.weeklyreport.data.repository.UserRepository
+import com.anas.weeklyreport.model.User
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
+import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.shared.BottomSheetBodyType
+import com.anas.weeklyreport.shared.NetworkException
 import com.anas.weeklyreport.shared.ReportActionType.BOOKMARK
 import com.anas.weeklyreport.shared.ReportActionType.RESTORE
 import com.anas.weeklyreport.shared.ReportActionType.TRASH
 import com.anas.weeklyreport.shared.ReportListType
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -30,19 +43,33 @@ import javax.inject.Inject
 @SuppressLint("MutableCollectionMutableState")
 @HiltViewModel
 class HomeViewmodel @Inject constructor(
-    private val myServer: MyServerRepo
+    private val reportRepository: ReportRepository,
+    private val userRepository: UserRepository
 ):ViewModel() {
 
-    var reports by allReports
+    var reports = allReports
     private var isPageInitialized = false
     val state = MutableStateFlow(HomeScreenState())
+    var screen by mutableStateOf("")
 
     fun init(deviceLanguage: String) {
+        println(AppData.userToken)
+        if (loggedInUser == null){
+            state.update { body -> body.copy(
+                screen = AppScreen.USER_DETAILS.toString()
+            ) }
+           return
+        }
         if (!isPageInitialized){
-            getAppLanguage(deviceLanguage)
             getAllReports()
+            state.update { body -> body.copy(
+                loggedInUser = loggedInUser!!,
+                isUserSignedIn = loggedInUser!!.id.isNotBlank()
+            ) }
             isPageInitialized = true
         }
+
+        getAppLanguage(deviceLanguage)
     }
 
     fun onEvent(event: HomeScreenEvent){
@@ -50,15 +77,14 @@ class HomeViewmodel @Inject constructor(
             HomeScreenEvent.OnCreateNewDocumentClick -> {
                 state.update { body ->
                     body.copy(
-                        screen = AppScreen.CREATE_DOCUMENT_SCREEN.toString() + "/empty"
+                        screen = AppScreen.CREATE_REPORT_SCREEN.toString() + "/empty"
                     )
                 }
             }
             is HomeScreenEvent.OnDocumentItemClick -> {
                 state.update { body ->
                     body.copy(
-                        screen = AppScreen.CREATE_DOCUMENT_SCREEN.toString() + "/${event.id}",
-                        lazyColumnPosition = reports.indexOf(reports.find { it.id == event.id })
+                        screen = AppScreen.CREATE_REPORT_SCREEN.toString() + "/${event.id}",
                     )
                 }
             }
@@ -71,17 +97,18 @@ class HomeViewmodel @Inject constructor(
                 }
 
             }
-            is HomeScreenEvent.OnOpenBottomSheet ->  {
+            is HomeScreenEvent.OnReportItemMoreActionClick ->  {
                 state.update { body ->
                     body.copy(
                         currentReport = event.report,
+                        bottomSheetType = if (event.report.isInTrash) BottomSheetBodyType.TRASH_OPTIONS else BottomSheetBodyType.ALL_OPTIONS,
                         isBottomSheetShown = true
                     )
                 }
             }
             HomeScreenEvent.OnBookmarkReport -> addReportToBookmark()
             HomeScreenEvent.OnMoveToTrashClick -> moveReportToTrash()
-            HomeScreenEvent.OnDownloadReport -> getDocument(state.value.currentReport.id)
+            HomeScreenEvent.OnDownloadReport -> getDocument()
             is HomeScreenEvent.RequestNavigationDrawer -> {
                 state.update { body ->
                     body.copy(
@@ -92,7 +119,7 @@ class HomeViewmodel @Inject constructor(
             HomeScreenEvent.OnBookmarkDrawerClick -> {
                 state.update { body ->
                     body.copy(
-                        isNavigationDrawerOpen = false,
+//                        isNavigationDrawerOpen = false,
                         screen = AppScreen.REPORT_LIST_SCREEN.toString() + "/${ReportListType.BOOKMARKS}",
                     )
                 }
@@ -100,13 +127,13 @@ class HomeViewmodel @Inject constructor(
             HomeScreenEvent.OnTrashDrawerClick -> {
                 state.update { body ->
                     body.copy(
-                        isNavigationDrawerOpen = false,
+//                        isNavigationDrawerOpen = false,
                         screen = AppScreen.REPORT_LIST_SCREEN.toString() + "/${ReportListType.TRASH}",
                     )
                 }
             }
             HomeScreenEvent.OnDeleteReportClick -> deleteItem()
-            HomeScreenEvent.OnRestoreReportClick -> {restoreReport()}
+            HomeScreenEvent.OnRestoreReportClick -> restoreReport()
             is HomeScreenEvent.ChangeBottomSheetType -> {
                 state.update { body ->
                     body.copy(
@@ -128,107 +155,201 @@ class HomeViewmodel @Inject constructor(
             is HomeScreenEvent.OnLanguageSelection -> {
                 state.update { body ->
                     body.copy(
-                        bottomSheetType = BottomSheetBodyType.ALL_OPTIONS,
                         isBottomSheetShown = false
                     )
                 }
                 saveAppLanguageToCache(event.language)
-
             }
 
             is HomeScreenEvent.RequestNotificationMessage -> state.update { body -> body.copy(isNotificationMessageShown = event.isShown) }
+            is HomeScreenEvent.OnGoogleSignInResult -> onGoogleSignInResult(event.result)
+            is HomeScreenEvent.OnSignOutClick -> signOutUser()
+            HomeScreenEvent.OnEditProfileClick -> state.update { body ->
+                body.copy(
+                    screen = AppScreen.USER_DETAILS.toString(),
+                )
+            }
+
+            HomeScreenEvent.OnSettingsClick -> {
+                state.update { body ->
+                    body.copy(
+                        isNavigationDrawerOpen = false,
+                        screen = AppScreen.SETTINGS.toString()
+                    )
+                }
+            }
+        }
+    }
+    private fun signInUser(user: User){
+        viewModelScope.launch {
+            userRepository.signUp(user).onEach { stateFlow ->
+                when(stateFlow){
+                    is Result.Success -> {
+
+                        state.update { body -> body.copy(
+                            screenLoading = false,
+                            loggedInUser = stateFlow.data,
+                            notificationMessage = R.string.signed_in_successfully,
+                            notificationColor = AppColors.NotificationSuccessColor,
+                            isUserSignedIn = true,
+                            isNotificationMessageShown = true
+                        )}
+                        getAllReports()
+                    }
+                    is Result.Error -> {
+                        state.update { body -> body.copy(
+                            notificationMessage = R.string.unknownErrorMessage,
+                            notificationColor = AppColors.NotificationErrorColor,
+                            isNotificationMessageShown = true,
+                            screenLoading = false
+                        ) }
+                    }
+                    Result.Loading -> {
+                        state.update { body -> body.copy(
+                            isNavigationDrawerOpen = false,
+                            screenLoading = true
+                        ) }
+                    }
+                }
+            }.launchIn(viewModelScope)
+
+        }
+    }
+    private fun signOutUser(){
+        state.update { body -> body.copy(
+            isNavigationDrawerOpen = false,
+            screenLoading = true,
+            isUserSignedIn = false,
+            loggedInUser = User()
+        ) }
+        viewModelScope.launch {
+            delay(600)
+            reportRepository.deleteAllLocalReports()
+            userRepository.signOut()
+            state.update { body -> body.copy(
+                screenLoading = false,
+                screen = AppScreen.USER_DETAILS.toString()
+            ) }
         }
     }
 
-    private fun saveAppLanguageToCache(languageCode:String) {
-        myServer.saveDataToLocalCache(languageCode, "app_language").onEach { stateFlow ->
-            when(stateFlow){
-                is DataState.Success -> {
-                    appLanguage = languageCode
 
-                    state.update { body ->
-                        body.copy(
-                            appLanguage = languageCode,
-                            toastMessage = "",
-                            screenLoading = false
-                        )
-                    }
+    private fun saveAppLanguageToCache(languageCode:String) {
+        when(reportRepository.saveDataToLocalCache(languageCode, "app_language")){
+            true -> {
+                appLanguage = languageCode
+
+                state.update { body ->
+                    body.copy(
+                        appLanguage = languageCode,
+                        screenLoading = false
+                    )
                 }
-                is DataState.Error -> {
-                    state.update { body ->
-                        body.copy(
-                            toastMessage = "Failed to change language ",
-                            screenLoading = false
-                        )
-                    }
-                }
-                DataState.Loading ->{
-                    state.update { body ->
-                        body.copy(
-                            screenLoading = true
-                        )
-                    }
+            }
+            false -> {
+                state.update { body ->
+                    body.copy(
+                        notificationMessage = R.string.failedToChangeLanuag,
+                        isNotificationMessageShown = true,
+                        screenLoading = false
+                    )
                 }
             }
 
-        }.launchIn(viewModelScope)
+        }
     }
-
     private fun restoreReport() {
         state.value.currentReport.isInTrash = false
         saveReport(RESTORE)
     }
 
+    private fun onGoogleSignInResult(result: ActivityResult){
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val googleUser = loggedInUser?.copy(
+                    id = account.id!!,
+                    fullName = account.displayName!!,
+                    email = account.email!!
+                )
+                signInUser(googleUser!!) // remote sign in
+            } catch (e: ApiException) {
+                Log.e("Google SignIn Result", e.message, e)
+                state.update { body -> body.copy(
+                    notificationMessage = R.string.unknownErrorMessage,
+                    notificationColor = AppColors.NotificationErrorColor,
+                    isNotificationMessageShown = true
+                )}
+            }
+        }else{
+            state.update { body -> body.copy(
+                notificationMessage = R.string.unknownErrorMessage,
+                notificationColor = AppColors.NotificationErrorColor,
+                isNotificationMessageShown = true
+            )}
+        }
+    }
+
     private fun saveReport(action:String){
-        var toastMessage = ""
+        var toastMessage = 0
         viewModelScope.launch {
-            myServer.saveReport(state.value.currentReport).onEach { stateFlow ->
+            reportRepository.updateReport(state.value.currentReport).onEach { stateFlow ->
                 when(stateFlow){
-                    is DataState.Success -> {
+                    is Result.Success -> {
                         when(action){
                             TRASH ->{
-                                toastMessage = "Report moved to trash"
+                                toastMessage = R.string.report_moved_to_trash
                             }
                             BOOKMARK -> {
-                                toastMessage = if (stateFlow.data.isBookmarked)
-                                    "Report added to bookmarks"
+                                toastMessage = if (state.value.currentReport.isBookmarked)
+                                    R.string.report_moved_to_bookmarks
                                 else
-                                    "Report removed from bookmarks"
+                                    R.string.report_removed_to_bookmarks
                             }
                             RESTORE -> {
-                                toastMessage = "Report restored"
+                                toastMessage = R.string.report_restored
                             }
 
                         }
                         state.update { body ->
                             body.copy(
+                                notificationColor = AppColors.NotificationSuccessColor,
+                                notificationMessage = toastMessage,
                                 isNotificationMessageShown = true,
-                                toastMessage = toastMessage,
                                 screenLoading = false
                             )
                         }
                     }
-                    is DataState.Error -> {
-                        when(action){ // roll back any changes
-                            TRASH ->{
-                                state.value.currentReport.isInTrash = false
+                    is Result.Error -> {
+                        if (stateFlow.exception is NetworkException){
+                            toastMessage = R.string.having_trouble_connecting_error_message
+                        }else{
+                            when(action){ // roll back any changes
+                                TRASH ->{
+                                    state.value.currentReport.isInTrash = false
+                                }
+                                BOOKMARK -> {
+                                    state.value.currentReport.isBookmarked = !state.value.currentReport.isBookmarked
+                                }
+                                RESTORE -> {
+                                    state.value.currentReport.isInTrash = true
+                                }
                             }
-                            BOOKMARK -> {
-                                state.value.currentReport.isBookmarked = !state.value.currentReport.isBookmarked
-                            }
-                            RESTORE -> {
-                                state.value.currentReport.isInTrash = true
-                            }
-
+                            toastMessage = R.string.failed_to_update_report
                         }
+
                         state.update { body ->
                             body.copy(
-                                toastMessage = "Failed to update item",
+                                notificationMessage = toastMessage,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                         state.update { body ->
                             body.copy(
                                 screenLoading = true
@@ -241,7 +362,8 @@ class HomeViewmodel @Inject constructor(
     }
 
     private fun getAppLanguage(deviceLanguage: String) {
-        appLanguage = myServer.getDataFromLocalCache(AppData.sharedPreferencesLanguageKey) ?: deviceLanguage
+
+        appLanguage = reportRepository.getDataFromLocalCache(AppData.sharedPreferencesLanguageKey) ?: deviceLanguage
         state.update { body ->
             body.copy(
                 isAppLanguageLoading = false,
@@ -261,27 +383,39 @@ class HomeViewmodel @Inject constructor(
         saveReport(TRASH)
     }
     private fun deleteItem() {
+        state.value.currentReport.isDeleted = true
         viewModelScope.launch {
-            myServer.deleteReport(state.value.currentReport.id).onEach {stateFlow->
+            reportRepository.deleteReport(state.value.currentReport.id).onEach { stateFlow->
                 when(stateFlow){
-                    is DataState.Success -> {
-                        reports.removeIf { it.id == state.value.currentReport.id }
+                    is Result.Success -> {
                         state.update { body ->
                             body.copy(
-                                toastMessage = "Report deleted",
+                                notificationMessage = R.string.reportDeletedMessage,
+                                notificationColor = AppColors.NotificationSuccessColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
                     }
-                    is DataState.Error -> {
+                    is Result.Error -> {
+                        val message  = when(stateFlow.exception){
+                            is NetworkException -> R.string.network_error_message
+                            else -> {
+                                state.value.currentReport.isDeleted = false
+                                R.string.unknownErrorMessage
+                            }
+                        }
+
                         state.update { body ->
                             body.copy(
-                                toastMessage = "Failed to delete report",
+                                notificationMessage = message,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                         state.update { body ->
                             body.copy(
                                 screenLoading = true
@@ -293,11 +427,11 @@ class HomeViewmodel @Inject constructor(
         }
     }
 
-    private fun getDocument(reportId:String){
+    private fun getDocument(){
         viewModelScope.launch {
-            myServer.getDocument(reportId, state.value.currentReport.name).onEach { stateFlow ->
+            reportRepository.getDocument(state.value.currentReport).onEach { stateFlow ->
                 when(stateFlow){
-                    is DataState.Success -> {
+                    is Result.Success -> {
                         state.update { body ->
                             body.copy(
                                 documentUri = stateFlow.data,
@@ -305,15 +439,17 @@ class HomeViewmodel @Inject constructor(
                             )
                         }
                     }
-                    is DataState.Error -> {
+                    is Result.Error -> {
                         state.update { body ->
                             body.copy(
-                                toastMessage = stateFlow.exception.message!!,
+                                notificationMessage = R.string.documnetDownloadFailMessage ,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                         state.update { body ->
                             body.copy(
                                 screenLoading = true
@@ -326,25 +462,34 @@ class HomeViewmodel @Inject constructor(
     }
     private fun getAllReports(){
         viewModelScope.launch {
-            myServer.getAllReports().onEach { stateFlow ->
+            reportRepository.getAllReports().onEach { stateFlow ->
                 when(stateFlow){
-                    is DataState.Success -> {
-                        reports.addAll(stateFlow.data.sortedByDescending { it.createdAt })
+                    is Result.Success -> {
                         state.update { body ->
                             body.copy(
                                 itemsLoading = false
                             )
                         }
                     }
-                    is DataState.Error -> {
+                    is Result.Error -> {
+                       val message = when(stateFlow.exception){
+                           is NetworkException -> {
+                               R.string.reports_network_error_message
+                           }
+                            else -> {
+                                R.string.unknownErrorMessage
+                            }
+                        }
                         state.update { body ->
                             body.copy(
-                                toastMessage = stateFlow.exception.message!!,
+                                notificationMessage = message,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 itemsLoading = false
                             )
                         }
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                         state.update { body ->
                             body.copy(
                                 itemsLoading = true
@@ -364,6 +509,8 @@ class HomeViewmodel @Inject constructor(
             )
         }
     }
+
+
 
 }
 

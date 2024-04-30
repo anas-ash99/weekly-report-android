@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,10 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.anas.weeklyreport.shared.AppColors.NotificationSuccessColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -27,9 +30,10 @@ import kotlinx.coroutines.launch
 fun MyNotificationMessage(
     modifier: Modifier = Modifier,
     message: String,
+    color: Color,
     durationMillis: Int = 2000,
     isVisible: Boolean,
-    onTimeout: () -> Unit = {}
+    onTimeout: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -56,12 +60,16 @@ fun MyNotificationMessage(
             .fillMaxWidth()
             .padding(16.dp)
             .offset(y = animatedOffsetY.dp), // Use animated offset
+        colors = CardDefaults.cardColors(
+            containerColor =color,
+        )
     ) {
         Text(
             text = message,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            color = Color.White
         )
     }
 }
@@ -69,5 +77,5 @@ fun MyNotificationMessage(
 @Preview
 @Composable
 fun MyNotificationMessagePreview() {
-    MyNotificationMessage(message = "Item permanently deleted", isVisible = true)
+    MyNotificationMessage(message = "Item permanently deleted", isVisible = true, color = NotificationSuccessColor){}
 }

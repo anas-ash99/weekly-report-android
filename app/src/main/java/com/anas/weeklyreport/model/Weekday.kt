@@ -1,10 +1,14 @@
 package com.anas.weeklyreport.model
 
-data class Weekday(
-    var day:String = "",
-    var descriptions:ArrayList<Description> = arrayListOf(),
+import java.util.UUID
 
-    )
+
+data class Weekday(
+    var id:String  = UUID.randomUUID().toString(),
+    var day:String = "",
+    var descriptions:ArrayList<Description> = arrayListOf()
+)
+
 data class Description(
     var description: String = "",
     var hours: String = ""

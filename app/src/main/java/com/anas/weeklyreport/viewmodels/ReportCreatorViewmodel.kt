@@ -1,17 +1,20 @@
 package com.anas.weeklyreport.viewmodels
 
-import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.AppData.allReports
-import com.anas.weeklyreport.data.DataState
+import com.anas.weeklyreport.R
+import com.anas.weeklyreport.data.Result
 import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
 import com.anas.weeklyreport.data.ReportCreatorScreenStates
-import com.anas.weeklyreport.data.repository.MyServerRepo
+import com.anas.weeklyreport.data.repository.ReportRepository
 import com.anas.weeklyreport.extension_methods.stringToLocalDate
 import com.anas.weeklyreport.model.Description
 import com.anas.weeklyreport.model.Report
+import com.anas.weeklyreport.shared.AppColors
+import com.anas.weeklyreport.shared.NetworkException
 import com.anas.weeklyreport.shared.TextFieldName.FROM_DATE
 import com.anas.weeklyreport.shared.TextFieldName.REPORT_NAME
 import com.anas.weeklyreport.shared.TextFieldName.REPORT_NUMBER
@@ -19,27 +22,28 @@ import com.anas.weeklyreport.shared.TextFieldName.TO_DATE
 import com.anas.weeklyreport.shared.TextFieldName.WEEK
 import com.anas.weeklyreport.shared.TextFieldName.YEAR
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 
 @HiltViewModel
 class ReportCreatorViewmodel @Inject constructor(
-    private val myServerRepo: MyServerRepo
+    private val reportRepository: ReportRepository
 ):ViewModel() {
 
     val report = MutableStateFlow(Report())
     val state = MutableStateFlow(ReportCreatorScreenStates())
     private var isPageInitialized = false
 
-
     fun init(reportId:String){
-        if (reportId != "empty" && !isPageInitialized){
+        if (reportId != "empty" && !isPageInitialized){ // retrieve report from report list
             report.value = allReports.value.filter { it.id == reportId }[0]
             isPageInitialized = true
         }
@@ -65,13 +69,12 @@ class ReportCreatorViewmodel @Inject constructor(
                 ) }
             }
             ReportCreatorScreenEvent.OnReportSaveClick -> {
-                if (report.value.id.isBlank()){ // add new report
-                    report.value.createdAt = LocalDateTime.now().toString()
-                    saveReportRemotely("save")
-                }else{ // edit an existing report
-                    saveReportRemotely("update")
-                }
 
+                if (report.value.id.isBlank()){ // add new report
+                    saveReport()
+                }else{ //update an existing report
+                    updateReport()
+                }
             }
             is ReportCreatorScreenEvent.OnTextFieldValueChange -> handleTextValueChange(event.fieldName, event.value )
 
@@ -138,7 +141,7 @@ class ReportCreatorViewmodel @Inject constructor(
             }
             is ReportCreatorScreenEvent.OnAiDialogRequest -> {
                 state.update { state -> state.copy(
-                    promptText = "",
+                    promptText = if (event.isShown) "" else state.promptText,
                     isAiDialogShown = event.isShown
                 ) }
             }
@@ -162,13 +165,18 @@ class ReportCreatorViewmodel @Inject constructor(
                 ) }
 
             }
-            is ReportCreatorScreenEvent.RequestNotificationMessage ->  state.update { state -> state.copy(isNotificationMessageShown = event.isShown) }
+            is ReportCreatorScreenEvent.RequestNotificationMessage -> {
+                state.update { state ->
+                    state.copy(
+                        isNotificationMessageShown = event.isShown,
+                    ) }
+            }
             is ReportCreatorScreenEvent.RequestContextMenu -> state.update { state -> state.copy(isContextMenuShown = event.isShown) }
         }
     }
 
     private fun updateDayDescription() {
-       val description = Description(state.value.dialogDescriptionItem.description, state.value.dialogDescriptionItem.hours)
+       val description = Description(description = state.value.dialogDescriptionItem.description, hours = state.value.dialogDescriptionItem.hours)
         report.value.weekdayDescription.forEach { des->
             if (des.day == state.value.currentWeekDayItem){
                 if (state.value.isDialogTypeAdd){
@@ -244,28 +252,37 @@ class ReportCreatorViewmodel @Inject constructor(
     private fun generateAiResponse() {
 
         viewModelScope.launch {
-            myServerRepo.getOpenAiChatResponse(state.value.promptText).onEach { stateFlow ->
+            reportRepository.getOpenAiChatResponse(state.value.promptText).onEach { stateFlow ->
                 when(stateFlow){
-                    is DataState.Success ->{
+                    is Result.Success ->{
                         val aiResponse = stateFlow.data
                         state.update { body ->
                             body.copy(
                                 previewWeekDays = aiResponse.weekdayDescription,
+                                notificationColor = AppColors.NotificationSuccessColor,
                                 isPreviewDialogShown = true,
                                 screenLoading = false
                             )
                         }
-
                     }
-                    is DataState.Error -> {
+                    is Result.Error -> {
                         state.update { body ->
                             body.copy(
-                                toastMessage = stateFlow.exception.message!!,
+                                notificationMessage = R.string.aiReportGeneratorErrorMessage,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
+
+                        delay(1500)
+                        state.update { body ->
+                            body.copy(
+                                isAiDialogShown = true
+                            )
+                        }
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                         state.update { body -> body.copy(
                             screenLoading = true
                         ) }
@@ -275,42 +292,54 @@ class ReportCreatorViewmodel @Inject constructor(
         }
     }
 
-    private fun saveReportRemotely(type:String) {
+    private fun saveReport() {
         viewModelScope.launch {
-            myServerRepo.saveReport(report.value).onEach { stateFlow ->
+            reportRepository.createReport(report.value).onEach { stateFlow ->
                 when(stateFlow){
-                    is DataState.Success -> {
-                        var toastMessage  =""
-                        when(type){
-                            "save" ->{
-                                toastMessage = "Report added successfully"
-                                allReports.value.add(0 , stateFlow.data)
-                                state.value.screen = AppScreen.HOME_SCREEN.toString() // only go back when
-                            }
-                            "update" ->{
-                                if(updateItem(report.value)){
-                                    toastMessage = "Report added updated"
-                                    state.value.screen = AppScreen.HOME_SCREEN.toString() // only go back when
-                                }else{
-                                    toastMessage = "Unknown error occurred"
-                                }
-                            }
-                        }
-
+                    is Result.Success -> {
                         state.update { body -> body.copy(
-                            toastMessage = toastMessage,
+                            notificationMessage = R.string.repor_saved_message,
+                            notificationColor = AppColors.NotificationSuccessColor,
+                            isNotificationMessageShown = true,
                             screenLoading = false,
                         ) }
+
+                        delay(1100)
+                        state.update { body -> body.copy(
+                            notificationColor = Color.Transparent,
+                            screen = AppScreen.HOME_SCREEN.toString(),
+                        ) }
                     }
-                    is DataState.Error -> {
+                    is Result.Error -> {
+                        var message = 0
+                         when(stateFlow.exception){
+                            is NetworkException -> {
+                                message = R.string.having_trouble_connecting_error_message
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    delay(1000)
+                                    state.update { body ->
+                                        body.copy(
+                                            notificationColor = Color.Transparent,
+                                            screen = AppScreen.HOME_SCREEN.toString()
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                               message = R.string.unknownErrorMessage
+                            }
+                        }
                         state.update { body ->
                             body.copy(
-                                toastMessage = "Failed to save report, please try again later!",
+                                notificationMessage = message,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
                                 screenLoading = false
                             )
                         }
+
                     }
-                    DataState.Loading -> {
+                    Result.Loading -> {
                      state.update { body -> body.copy(screenLoading = true) }
                     }
                 }
@@ -318,25 +347,64 @@ class ReportCreatorViewmodel @Inject constructor(
         }
     }
 
-    fun restToastMessage() {
-        state.value.toastMessage = ""
+    private fun updateReport() {
+        viewModelScope.launch {
+            reportRepository.updateReport(report.value).onEach { stateFlow ->
+                when(stateFlow){
+                    is Result.Success -> {
+                        state.update { body -> body.copy(
+                            notificationMessage = R.string.repor_saved_message,
+                            notificationColor = AppColors.NotificationSuccessColor,
+                            isNotificationMessageShown = true,
+                            screenLoading = false,
+                        ) }
+                        // delay so the user can see the notification message
+                        delay(1000)
+                        state.update { body -> body.copy(
+                            notificationColor = Color.Transparent,
+                            screen = AppScreen.HOME_SCREEN.toString(),
+                        ) }
+                    }
+                    is Result.Error -> {
+                        var message = 0
+                        when(stateFlow.exception) {
+                            is NetworkException -> {
+                                message = R.string.having_trouble_connecting_error_message
+
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    // Code to be executed asynchronously
+                                    delay(1500)
+                                    state.update { body ->
+                                        body.copy(
+                                            notificationColor = Color.Transparent,
+                                            screen = AppScreen.HOME_SCREEN.toString()
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                                message = R.string.unknownErrorMessage
+                            }
+                        }
+                        state.update { body ->
+                            body.copy(
+                                notificationMessage = message,
+                                notificationColor = AppColors.NotificationErrorColor,
+                                isNotificationMessageShown = true,
+                                screenLoading = false
+                            )
+                        }
+                    }
+                    Result.Loading -> {
+                        state.update { body -> body.copy(screenLoading = true) }
+                    }
+                }
+            }.launchIn(viewModelScope)
+        }
     }
 
-    private fun updateItem(report:Report):Boolean{
-        var isUpdated = false
-        try {
-            allReports.value.forEachIndexed{index, doc->
-                if (doc.id == report.id){
-                    allReports.value[index] = report
-                    isUpdated = true
-                }
-            }
-
-        }catch (e:Exception){
-            isUpdated = false
-            Log.e("update item", e.message, e)
-        }
-        return isUpdated
+    fun restToastMessage() {
+        state.value.toastMessage = 0
     }
 
 }

@@ -26,12 +26,10 @@ fun HomeBottomSheet (modifier: Modifier = Modifier, sheetState: SheetState, onEv
             when(state.bottomSheetType){
                 BottomSheetBodyType.ALL_OPTIONS -> AllOptionsSheetBody(onEvent = onEvent, state = state)
                 BottomSheetBodyType.TRASH_OPTIONS -> TrashOptionsSheetBody(onEvent = onEvent)
-                BottomSheetBodyType.CHANGE_LANGUAGE -> ChangeLanguageSheetBody(onEvent)
+                else -> {}
             }
 
         }
     }
-
-
 
 }

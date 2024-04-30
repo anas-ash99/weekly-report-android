@@ -1,6 +1,8 @@
+@file:Suppress("DEPRECATION")
+
 package com.anas.weeklyreport.extension_methods
 
-import android.app.Activity
+
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloat
@@ -19,38 +21,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import com.anas.weeklyreport.AppData
+import com.anas.weeklyreport.database.entities.ReportEntity
 import com.anas.weeklyreport.model.Report
-import kotlinx.coroutines.flow.update
 import java.util.Locale
-
-fun List<Report>.updateItemById(report: Report):Boolean {
-    val updatedList = this.toMutableList() // Create a mutable copy to avoid ConcurrentModificationException
-    var isUpdated = false
-    try {
-        updatedList.forEachIndexed{index, doc->
-            if (doc.id == report.id){
-                updatedList[index] = report
-                isUpdated = true
-            }
-        }
-
-    }catch (e:Exception){
-        isUpdated = false
-//        state.update { body ->
-//            body.copy(
-//                toastMessage = "Unknown error occurred"
-//            )
-//        }
-    }
-    return isUpdated
-}
-
-
-
-fun Context.myUpdateConfiguration(locale: Locale): Configuration {
-    return resources.configuration.apply { setLocale(locale) }
-}
 
 fun Context.setLocale(languageCode: String) {
     val locale = Locale(languageCode)
@@ -60,13 +33,6 @@ fun Context.setLocale(languageCode: String) {
     config.setLocale(locale)
     resources.updateConfiguration(config, resources.displayMetrics)
 }
-
-fun Context.updateLocale(locale: Locale): Context {
-    Locale.setDefault(locale) // Set the default locale (affects system-wide if possible)
-    val configuration = resources.configuration.apply { setLocale(locale) }
-    return createConfigurationContext(configuration)
-}
-
 
 fun Modifier.shimmerEffect(): Modifier = composed {
     var size by remember {
@@ -95,4 +61,40 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         .onGloballyPositioned {
             size = it.size
         }
+}
+
+fun Report.toReportEntity(): ReportEntity {
+    return ReportEntity(
+        id = this.id,
+        userId = this.userId,
+        name = this.name,
+        year = this.year,
+        isSynced = this.isSynced,
+        calenderWeak = this.calenderWeak,
+        fromDate = this.fromDate,
+        toDate = this.toDate,
+        reportNumber = this.reportNumber,
+        isInTrash = this.isInTrash,
+        isDeleted = this.isDeleted,
+        isBookmarked = this.isBookmarked,
+        createdAt = this.createdAt,
+    )
+}
+
+fun ReportEntity.toReport():Report{
+    return Report(
+        id = this.id,
+        userId = this.userId,
+        name = this.name,
+        year = this.year,
+        calenderWeak = this.calenderWeak,
+        fromDate = this.fromDate,
+        toDate = this.toDate,
+        reportNumber = this.reportNumber,
+        isInTrash = this.isInTrash,
+        isSynced = this.isSynced,
+        isDeleted = this.isDeleted,
+        isBookmarked = this.isBookmarked,
+        createdAt = this.createdAt
+    )
 }

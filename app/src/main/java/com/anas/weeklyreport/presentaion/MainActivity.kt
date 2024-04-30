@@ -8,34 +8,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.anas.weeklyreport.AppData
+import com.anas.weeklyreport.data.repository.UserRepository
 import com.anas.weeklyreport.utilities.NavigationMap
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import java.util.Locale
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-//    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
+    @Inject lateinit var userRepository: UserRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val dexOutputDir: File = codeCacheDir
+        dexOutputDir.setReadOnly()
 
         setContent {
-            NavigationMap()
+            NavigationMap(userRepository.getUser() != null)
         }
 
-//        requestPermissionLauncher = registerForActivityResult(
-//            ActivityResultContracts.RequestPermission()
-//        ) { isGranted: Boolean ->
-//            if (isGranted) {
-//                Toast.makeText(this, "granted", Toast.LENGTH_SHORT).show()
-//            } else {
-//                // Handle the case where the permission is not granted (e.g., show a message)
-//            }
-//        }
-//
-//        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
 

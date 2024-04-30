@@ -30,7 +30,8 @@ import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 fun AllOptionsSheetBody(
 
     onEvent:(HomeScreenEvent)->Unit,
-    state:HomeScreenState
+    state:HomeScreenState,
+
 ) {
     Column {
 

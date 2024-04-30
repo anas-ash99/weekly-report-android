@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -28,47 +29,15 @@ import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.shared.ReportListType
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReportList(
     state: HomeScreenState,
     onEvent:(HomeScreenEvent) ->Unit,
     reports:MutableList<Report>,
-    navController: NavController,
     type:String,
 ) {
     val listState = rememberLazyListState()
-    val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState()
-    LaunchedEffect(state.screen){ // launchedEffect for handling navigation
-        if (state.screen == AppScreen.HOME_SCREEN.toString()){
-            navController.popBackStack()
-        }else if (state.screen.isNotBlank()){
-            navController.navigate(state.screen)
-            state.screen = ""
-        }
-    }
-    LaunchedEffect(state.documentUri){ // open the downloaded document
-        state.documentUri?.let {
-            openWordDocument(context, it)
-            state.documentUri = null
-        }
-    }
-    LaunchedEffect(state.toastMessage){
-        if (state.toastMessage.isNotBlank()){
-//            Toast.makeText(context, state.toastMessage, Toast.LENGTH_SHORT).show()
-            state.toastMessage = ""
-        }
-    }
-    HomeBottomSheet(state = state, sheetState = sheetState,  onEvent = onEvent)
-
-    val filteredReports = when(type){ // filter the reports before calling the lazy column for better spacing between items
-        ReportListType.ALL.toString() -> reports.filter { !it.isInTrash }
-        ReportListType.BOOKMARKS.toString() -> reports.filter { it.isBookmarked && !it.isInTrash }
-        ReportListType.TRASH.toString() -> reports.filter { it.isInTrash }
-        else -> reports
-    }
-
 
     if (state.itemsLoading){
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)){
@@ -76,11 +45,15 @@ fun ReportList(
                 ShimmerListItem()
             }
         }
-
     }else{
-        LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(filteredReports) { item ->
-                ReportListItem(item, onEvent)
+        LazyColumn(state = listState) {
+            items(reports.sortedByDescending { it.createdAt }) { item ->
+                when(type){ // filter the reports before calling the lazy column for better spacing between items
+                    ReportListType.ALL.toString() -> ReportListItem(Modifier.animateItemPlacement(), item, onEvent, !item.isInTrash )
+                    ReportListType.BOOKMARKS.toString() -> ReportListItem(Modifier.animateItemPlacement(), item, onEvent, item.isBookmarked && !item.isInTrash )
+                    ReportListType.TRASH.toString() -> ReportListItem(Modifier.animateItemPlacement(), item, onEvent, item.isInTrash && !item.isDeleted)
+                }
+
             }
             item { Spacer(modifier = Modifier.height(35.dp)) } // add bottom padding to the last item
         }

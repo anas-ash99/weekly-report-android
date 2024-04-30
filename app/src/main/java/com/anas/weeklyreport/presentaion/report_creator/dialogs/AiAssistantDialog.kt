@@ -48,7 +48,7 @@ fun AiAssistantDialog(
                         onEvent(ReportCreatorScreenEvent.OnGeneraAiResponseClick)
                         onEvent(ReportCreatorScreenEvent.OnAiDialogRequest(false))
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.APP_MAIN_COLOR),
                     enabled =  state.promptText.isNotBlank()
                 ) {
                     Text(stringResource(id = R.string.generate))
@@ -59,7 +59,7 @@ fun AiAssistantDialog(
                     onClick = {
                       onEvent(ReportCreatorScreenEvent.OnAiDialogRequest(false))
                               },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR.color),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.CANCEL_BUTTON_COLOR),
                 ) {
                     Text(stringResource(id = R.string.cancel))
                 }

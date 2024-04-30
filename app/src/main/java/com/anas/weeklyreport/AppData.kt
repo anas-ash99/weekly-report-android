@@ -1,30 +1,24 @@
 package com.anas.weeklyreport
 
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.text.input.KeyboardType
 import com.anas.weeklyreport.model.Description
 import com.anas.weeklyreport.model.Report
+import com.anas.weeklyreport.model.User
 import com.anas.weeklyreport.model.Weekday
-import com.anas.weeklyreport.model.ui.ReportTextField
-import com.anas.weeklyreport.shared.TextFieldName
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalDateTime
 import java.util.UUID
 
 
 object AppData {
-
-    var allReports = mutableStateOf(arrayListOf<Report>())
+    var allReports = MutableStateFlow<ArrayList<Report>>(arrayListOf())
+    var loggedInUser: User? = null
+    var userToken:String? = null
     var testReports = generateReportDocuments(1)
     var appLanguage = ""
     const val sharedPreferencesLanguageKey = "app_language"
-
-
+    const val privacyPolicyUrl = "https://anas-ash99.github.io/weekly-report-privacy-policy"
 }
-
-
-
-
 
 private fun generateReportDocuments(count: Int): List<Report> {
     return (1..count).map { index ->
@@ -45,14 +39,14 @@ private fun generateReportDocuments(count: Int): List<Report> {
 private fun generateWeekdayDescriptions(): List<Weekday> {
     val days = listOf("monday", "tuesday", "wednesday", "thursday", "friday")
     return days.map { day ->
-        Weekday(day, generateDescriptions())
+        Weekday(day = day, descriptions = generateDescriptions())
     }
 }
 
 private fun generateDescriptions(): ArrayList<Description> {
     return arrayListOf(
-        Description("Softly alternate the background color of each card (e.g., very light gray for odd-indexed items). Be mindful of contrast for accessibility", "2.5"),
-        Description("Consider adding a subtle drop shadow below each card to visually lift it from the background.", "3"),
-        Description("Meeting", "1")
+        Description(description = "Softly alternate the background color of each card (e.g., very light gray for odd-indexed items). Be mindful of contrast for accessibility", hours = "2.5"),
+        Description(description = "Consider adding a subtle drop shadow below each card to visually lift it from the background.", hours = "3"),
+        Description(description = "Meeting", hours = "1")
     )
 }
