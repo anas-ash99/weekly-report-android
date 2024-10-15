@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.ui.graphics.Color
 import com.anas.weeklyreport.AppData
+import com.anas.weeklyreport.R
 import com.anas.weeklyreport.model.Report
 import com.anas.weeklyreport.model.User
 import com.anas.weeklyreport.shared.AppColors
@@ -30,5 +31,5 @@ data class HomeScreenState (
     var isAppLanguageLoading:Boolean = true,
     var isNotificationMessageShown:Boolean = false,
     var isUserSignedIn:Boolean = AppData.loggedInUser != null,
-
-    )
+    val filterReportsBy:Int = R.string.all
+)

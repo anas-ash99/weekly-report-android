@@ -68,7 +68,7 @@ class UserRepoImpl @Inject constructor(
         emit(Result.Loading)
         try {
             if (loggedInUser != null && loggedInUser!!.id.isNotBlank()){
-                val res = userApi.updateUser(user)
+                val res = userApi.updateUser(user, "Bearer $userToken")
                 if (res.data == true){
                     updateLoggedInUser(user)
                     emit(Result.Success(loggedInUser!!))
@@ -122,7 +122,7 @@ class UserRepoImpl @Inject constructor(
     override suspend fun deleteUserById(id: String): Flow<Result<Boolean>> = flow {
         emit(Result.Loading)
         try {
-           val res = userApi.deleteUser(id)
+           val res = userApi.deleteUser(id, "Bearer $userToken")
             if(res.data!!){
                 signOut()
                 emit(Result.Success(true))

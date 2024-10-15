@@ -19,6 +19,7 @@ import com.anas.weeklyreport.data.Result
 import com.anas.weeklyreport.data.HomeScreenState
 import com.anas.weeklyreport.data.repository.ReportRepository
 import com.anas.weeklyreport.data.repository.UserRepository
+import com.anas.weeklyreport.extension_methods.getYear
 import com.anas.weeklyreport.model.User
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
 import com.anas.weeklyreport.shared.AppColors
@@ -51,9 +52,10 @@ class HomeViewmodel @Inject constructor(
     private var isPageInitialized = false
     val state = MutableStateFlow(HomeScreenState())
     var screen by mutableStateOf("")
+    var filterCategories = arrayListOf(R.string.all)
 
     fun init(deviceLanguage: String) {
-        println(AppData.userToken)
+        initFilterCategories()
         if (loggedInUser == null){
             state.update { body -> body.copy(
                 screen = AppScreen.USER_DETAILS.toString()
@@ -67,9 +69,25 @@ class HomeViewmodel @Inject constructor(
                 isUserSignedIn = loggedInUser!!.id.isNotBlank()
             ) }
             isPageInitialized = true
+
         }
 
         getAppLanguage(deviceLanguage)
+    }
+
+    private fun initFilterCategories() {
+//         reports.value.sortedByDescending { it.fromDate.convertStringToDate("dd/MM/yyyy") }.forEach {
+//             if (it.fromDate.isNotBlank() && !it.isInTrash && !filterCategories.contains(it.fromDate.getYear().toInt())){
+//                 filterCategories.add(it.fromDate.getYear().toInt())
+//             }
+//         }
+        reports.value.forEach {
+             if (it.fromDate.isNotBlank() && !it.isInTrash && !filterCategories.contains(it.fromDate.getYear().toInt())){
+                 filterCategories.add(it.fromDate.getYear().toInt())
+             }
+         }
+        // sort the list and ignore the first item
+        filterCategories = ArrayList((arrayListOf(filterCategories[0]) + filterCategories.drop(1).sortedByDescending { it }))
     }
 
     fun onEvent(event: HomeScreenEvent){
@@ -178,6 +196,18 @@ class HomeViewmodel @Inject constructor(
                     )
                 }
             }
+
+            is HomeScreenEvent.FilterReports -> {
+                state.update { body ->
+                    body.copy(
+                        filterReportsBy = event.label
+                    )
+                }
+
+                when(state.value.filterReportsBy){
+                     R.string.all -> {}
+                }
+            }
         }
     }
     private fun signInUser(user: User){
@@ -284,8 +314,9 @@ class HomeViewmodel @Inject constructor(
                 )}
             }
         }else{
+            println(result.resultCode)
             state.update { body -> body.copy(
-                notificationMessage = R.string.unknownErrorMessage,
+                notificationMessage = R.string.google_sign_in_failed,
                 notificationColor = AppColors.NotificationErrorColor,
                 isNotificationMessageShown = true
             )}
@@ -465,6 +496,7 @@ class HomeViewmodel @Inject constructor(
             reportRepository.getAllReports().onEach { stateFlow ->
                 when(stateFlow){
                     is Result.Success -> {
+                        initFilterCategories()
                         state.update { body ->
                             body.copy(
                                 itemsLoading = false

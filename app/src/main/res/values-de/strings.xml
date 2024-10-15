@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gcp_id">826674401965-9ea84ku58sf4b98eja3q5l46ansiuk3m.apps.googleusercontent.com</string>
-    <string name="app_name">Wochenbericht</string>
+    <string name="app_name">Ausbildungsnachweis</string>
     <string name="create_report">Bericht erstellen</string>
     <string name="save">Speichern</string>
-    <string name="from_date">Von</string>
-    <string name="to_date">Bis</string>
+    <string name="date_range">Von - Bis*</string>
+    <string name="to_date">Bis*</string>
     <string name="weekday_descriptions">Wochentag</string>
     <string name="preview">Vorschau</string>
     <string name="report_name">Berichtsname*</string>
     <string name="report_number">Berichtsnummer*</string>
-    <string name="year">Jahr</string>
-    <string name="week">Woche</string>
+    <string name="year">Ausbildungsjahr</string>
+    <string name="week">kalenderwoche*</string>
     <string name="generate">Generieren</string>
     <string name="cancel">Abbrechen</string>
     <string name="ai_dailog_title">KI-Berichtsassistent</string>
@@ -78,8 +78,23 @@
     <string name="rate_app">App bewerten</string>
     <string name="share">Teilen</string>
     <string name="privacy_policy">Datenschutzrichtlinie</string>
-    <string name="delete_account">Delete Account</string>
-    <string name="account_delete_error_message">Coundlt delete account, please try again later</string>
-    <string name="delete_account_diaolg_message">Deleting your account will remove all of your information from our database. This Cannot be undone!</string>
-    <string name="email_sent_successfully">Email sent successfully</string>
+    <string name="delete_account">Konto löschen</string>
+    <string name="account_delete_error_message">Das Konto konnte nicht gelöscht werden. Bitte versuche es später erneut.</string>
+    <string name="delete_account_diaolg_message">Das Löschen deines Kontos entfernt alle deine Informationen aus unserer Datenbank. Dies kann nicht rückgängig gemacht werden!</string>
+    <string name="email_sent_successfully">Vielen Dank für dein Feedback</string>
+    <string name="no_reports">Keine Berichte</string>
+    <string name="all">Alle</string>
+    <string name="very_bad">Sehr schlecht</string>
+    <string name="bad">Schlecht</string>
+    <string name="neutral">Neutral</string>
+    <string name="good">Gut</string>
+    <string name="very_good">Sehr gut</string>
+    <string name="give_feedback">Feedback geben</string>
+    <string name="email_label_optional">E-Mail-Adresse (optional)</string>
+    <string name="email_textfield_hint">Gib deine E-Mail-Adresse ein</string>
+    <string name="rate_your_experience">Bewerte deine Erfahrung</string>
+    <string name="care_to_share_something">Möchtest du noch mehr dazu sagen?</string>
+    <string name="feedback_textfild_hint">Hier etwas screiben…</string>
+    <string name="send_feedback">Feedback senden</string>
+    <string name="google_sign_in_failed">Anmeldung bei Google fehlgeschlagen. Bitte versuchen Sie es später erneut.</string>
 </resources>

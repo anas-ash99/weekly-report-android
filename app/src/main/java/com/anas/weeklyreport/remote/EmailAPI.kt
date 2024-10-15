@@ -11,8 +11,6 @@ import retrofit2.http.POST
 
 interface EmailAPI {
     @POST("emails")
-    suspend fun sendEmail(
-        @Body email: Email,
-    ): MyServerResponse<Email>
+    suspend fun sendEmail(@Body email: Email): MyServerResponse<Email>
 
 }

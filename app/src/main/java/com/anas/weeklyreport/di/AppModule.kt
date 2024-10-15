@@ -48,7 +48,7 @@ object AppModule {
             .build()
         val baseUrlRemote ="https://weekly-report-server-a280ea8d46ca.herokuapp.com/"
         val baseUrlLocal = "http://10.0.2.2:8080"
-        val baseUrlLocalRealDevice = "http://192.168.250.18:8080" // get the ipv4 address by running ipconfig in the command line
+        val baseUrlLocalRealDevice = "http://192.168.0.82:8080" // get the ipv4 address by running ipconfig in the command line
         return Retrofit.Builder()
             .baseUrl(baseUrlLocalRealDevice)
             .addConverterFactory(GsonConverterFactory.create())

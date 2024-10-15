@@ -10,6 +10,7 @@ import com.anas.weeklyreport.data.Result
 import com.anas.weeklyreport.screen_actions.ReportCreatorScreenEvent
 import com.anas.weeklyreport.data.ReportCreatorScreenStates
 import com.anas.weeklyreport.data.repository.ReportRepository
+import com.anas.weeklyreport.extension_methods.calenderWeek
 import com.anas.weeklyreport.extension_methods.stringToLocalDate
 import com.anas.weeklyreport.model.Description
 import com.anas.weeklyreport.model.Report
@@ -30,6 +31,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
+import java.util.Locale
 import javax.inject.Inject
 
 
@@ -103,28 +108,16 @@ class ReportCreatorViewmodel @Inject constructor(
             is ReportCreatorScreenEvent.RequestDatePicker -> {
                 state.update { state -> state.copy(
                     isDatePickerShown = event.showDatePicker,
-                    currentDatePickerField = event.field
                 ) }
-                 assignDateToDatePicker(event.showDatePicker)
             }
 
             is ReportCreatorScreenEvent.OnDateSelection -> {
-                when(state.value.currentDatePickerField){
-                    FROM_DATE->{
-                       report.update { doc ->
-                           doc.copy(
-                               fromDate = event.date
-                           )
-                       }
-                    }
-                    TO_DATE -> {
-                        report.update { doc ->
-                            doc.copy(
-                                toDate = event.date
-                            )
-                        }
-
-                    }
+                report.update { doc ->
+                    doc.copy(
+                        fromDate = event.fromDate,
+                        toDate = event.toDate,
+                        calenderWeak = event.fromDate.calenderWeek()
+                    )
                 }
             }
 
@@ -192,27 +185,6 @@ class ReportCreatorViewmodel @Inject constructor(
                 dialogDescriptionItem = Description(),
                 weekDayListTrigger = state.weekDayListTrigger + 1
             )
-        }
-    }
-
-    private fun assignDateToDatePicker(showDatePicker: Boolean) {
-        if (showDatePicker){
-            when(state.value.currentDatePickerField){
-                FROM_DATE->{
-                    if (report.value.fromDate.isNotBlank()){
-                        state.update { state -> state.copy(
-                            selectedDatePicker = report.value.fromDate.stringToLocalDate()
-                        ) }
-                    }
-                }
-                TO_DATE -> {
-                    if (report.value.toDate.isNotBlank()){
-                        state.update { state -> state.copy(
-                            selectedDatePicker = report.value.toDate.stringToLocalDate()
-                        ) }
-                    }
-                }
-            }
         }
     }
 

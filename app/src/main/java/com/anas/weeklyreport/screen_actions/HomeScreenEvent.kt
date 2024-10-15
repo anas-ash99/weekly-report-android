@@ -27,4 +27,6 @@ sealed interface HomeScreenEvent{
     object OnEditProfileClick:HomeScreenEvent
     object OnSettingsClick:HomeScreenEvent
 
+    data class FilterReports(val label:Int):HomeScreenEvent
+
 }

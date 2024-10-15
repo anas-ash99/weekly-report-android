@@ -89,7 +89,8 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                 ScreenAppBar(navController = navController, onEvent =  viewmodel::onEvent)
             },
             floatingActionButton = {
-                val saveButtonEnabled:  Boolean = report.name.isNotBlank()  && report.reportNumber.isNotBlank()
+                val saveButtonEnabled = report.reportNumber.isNotBlank() && report.calenderWeak.isNotBlank()
+                        && report.fromDate.isNotBlank() && report.toDate.isNotBlank()
                 Button(
                     onClick = { viewmodel.onEvent(ReportCreatorScreenEvent.OnReportSaveClick) },
                     colors = ButtonDefaults.buttonColors(AppColors.APP_MAIN_COLOR),
@@ -150,7 +151,7 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
                     onEvent = viewmodel::onEvent,
                     state = state,
                 )
-                MyDatePicker(state = state, onEvent = viewmodel::onEvent)
+                MyDatePicker(state = state, onEvent = viewmodel::onEvent, report.fromDate, report.toDate)
             }
         }
 
@@ -167,21 +168,23 @@ fun ReportCreatorScreen(navController: NavHostController?, reportId:String) {
 }
 fun initTextFields (name:String, reportNumber:String, year:String, calenderWeak:String, fromDate:String, toDate:String):List<ReportTextField> {
     return listOf(
-        ReportTextField(
-            value = name,
-            name = TextFieldName.REPORT_NAME,
-            label = R.string.report_name,
-            type = KeyboardType.Text,
-        ),
+//        ReportTextField(
+//            value = name,
+//            name = TextFieldName.REPORT_NAME,
+//            label = R.string.report_name,
+//            type = KeyboardType.Text,
+//        ),
         ReportTextField(
             value = reportNumber,
             name = TextFieldName.REPORT_NUMBER,
             label = R.string.report_number,
         ),
         ReportTextField(
-            value = year,
-            name = TextFieldName.YEAR,
-            label = R.string.year,
+            value = "$fromDate - $toDate",
+            name = TextFieldName.FROM_DATE,
+            label = R.string.date_range,
+            type = KeyboardType.Text,
+            isDate = true
         ),
         ReportTextField(
             value = calenderWeak,
@@ -189,19 +192,10 @@ fun initTextFields (name:String, reportNumber:String, year:String, calenderWeak:
             label = R.string.week,
         ),
         ReportTextField(
-            value = fromDate,
-            name = TextFieldName.FROM_DATE,
-            label = R.string.from_date,
-            type = KeyboardType.Text,
-            isDate = true
-        ),
-        ReportTextField(
-            value = toDate,
-            name = TextFieldName.TO_DATE,
-            label = R.string.to_date,
-            type = KeyboardType.Text,
-            isDate = true
-        ),
+            value = year,
+            name = TextFieldName.YEAR,
+            label = R.string.year,
+        )
 
         )
 }

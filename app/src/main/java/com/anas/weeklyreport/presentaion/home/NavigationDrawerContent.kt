@@ -5,20 +5,24 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anas.weeklyreport.AppData.loggedInUser
@@ -147,14 +152,18 @@ fun DrawerHeader(
     onEvent: (HomeScreenEvent) -> Unit,
 ){
     Spacer(modifier = Modifier.height(10.dp))
-    Image(
-        painter = painterResource(id = R.drawable.user_icon),
-        contentDescription = stringResource(id = R.string.user_profile),
-
-        Modifier
-            .size(50.dp)
-            .padding(start = 16.dp)
-    )
+//    Image(
+//        painter = painterResource(id = R.drawable.user_icon),
+//        contentDescription = stringResource(id = R.string.user_profile),
+//
+//        Modifier
+//            .size(50.dp)
+//            .padding(start = 16.dp)
+//    )
+    MyProfilePic(modifier = Modifier
+        .padding(start = 16.dp)
+        .size(50.dp))
+    Spacer(modifier = Modifier.height(5.dp))
     Button(
         onClick = { onEvent(HomeScreenEvent.OnEditProfileClick) },
         colors = ButtonDefaults.buttonColors(
@@ -234,7 +243,29 @@ fun DrawerHeaderGoogle(
         }
     }
 
+
 }
+
+
+@Composable
+fun MyProfilePic(
+    modifier:Modifier = Modifier,
+    iconSize:Dp = 30.dp
+) {
+    Box(
+        modifier = modifier
+            .size(55.dp)
+            .aspectRatio(1f) // Ensure it's a circle
+            .background(Color.LightGray, shape = CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(imageVector = Icons.Outlined.Person, contentDescription = "", Modifier.size(iconSize), tint = Color(
+            0xCE161616
+        )
+        )
+    }
+}
+
 @Preview
 @Composable
 fun NavigationSheetReview() {
@@ -245,5 +276,4 @@ data class NavigationDrawerItem(
     val painter:Painter? = null,
     val name:Int,
     val visible:Boolean = true,
-
 )

@@ -1,19 +1,19 @@
-<resources>
-    <string name="gcp_id">826674401965-9ea84ku58sf4b98eja3q5l46ansiuk3m.apps.googleusercontent.com</string>
-    <string name="app_name">Weekly Report</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="gcp_id" tools:ignore="TypographyDashes">826674401965-9ea84ku58sf4b98eja3q5l46ansiuk3m.apps.googleusercontent.com</string>
+    <string name="app_name">Ausbildungsnachweis</string>
     <string name="create_report">Create Report</string>
     <string name="save">Save</string>
-    <string name="from_date">From date</string>
+    <string name="date_range">From - To Dates*</string>
     <string name="to_date">To date</string>
     <string name="weekday_descriptions">Weekday Descriptions</string>
     <string name="preview">Preview</string>
     <string name="report_name">Report name*</string>
     <string name="report_number">Report number*</string>
     <string name="year">Year</string>
-    <string name="week">Week</string>
+    <string name="week">Calender Week*</string>
     <string name="generate">Generate</string>
     <string name="cancel">Cancel</string>
-    <string name="ai_dailog_title">AI Report Assistan</string>
+    <string name="ai_dailog_title">AI Report Assistant</string>
     <string name="ai_dailog_secondry_title">Let the AI help you craft your report. Be specific!</string>
     <string name="ai_dailog_textfield_lable">Describe your report needs</string>
     <string name="description_dialog_title">Add Description</string>
@@ -80,5 +80,20 @@
     <string name="delete_account">Delete Account</string>
     <string name="account_delete_error_message">Couldn\'t delete account, please try again later</string>
     <string name="delete_account_diaolg_message">Deleting your account will remove all of your information from our database. This Cannot be undone!</string>
-    <string name="email_sent_successfully">Feedback submitted successfully</string>
+    <string name="email_sent_successfully">Thank you for the feedback</string>
+    <string name="no_reports">No reports</string>
+    <string name="all">All</string>
+    <string name="very_bad">Very Bad</string>
+    <string name="bad">Bad</string>
+    <string name="neutral">Neutral</string>
+    <string name="good">Good</string>
+    <string name="very_good">Very Good</string>
+    <string name="give_feedback">Give Feedback</string>
+    <string name="email_label_optional">Email Address (optional)</string>
+    <string name="email_textfield_hint">Enter your email address</string>
+    <string name="rate_your_experience">Rate your experience</string>
+    <string name="care_to_share_something">Care to share more about it ?</string>
+    <string name="feedback_textfild_hint">Say something here...</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="google_sign_in_failed">Google sign-in failed. Please try again later.</string>
 </resources>

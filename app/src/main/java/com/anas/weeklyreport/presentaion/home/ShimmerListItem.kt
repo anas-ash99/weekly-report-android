@@ -13,11 +13,13 @@ import androidx.compose.ui.unit.dp
 import com.anas.weeklyreport.extension_methods.shimmerEffect
 
 @Composable
-fun ShimmerListItem(){
+fun ShimmerListItem(
+    modifier:Modifier = Modifier
+){
 
     Column {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
                 .height(110.dp)

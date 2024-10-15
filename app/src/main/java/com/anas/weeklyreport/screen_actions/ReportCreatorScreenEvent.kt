@@ -12,8 +12,8 @@ sealed interface ReportCreatorScreenEvent{
     object OnSaveDescriptionClick: ReportCreatorScreenEvent
     data class OnDescriptionDialogValueChange(val value:String): ReportCreatorScreenEvent
     data class OnHoursDialogValueChange(val value:String): ReportCreatorScreenEvent
-    data class RequestDatePicker(val field:String, val showDatePicker: Boolean): ReportCreatorScreenEvent
-    data class OnDateSelection(val date:String, val field:String): ReportCreatorScreenEvent
+    data class RequestDatePicker( val showDatePicker: Boolean): ReportCreatorScreenEvent
+    data class OnDateSelection(val fromDate:String, val toDate:String): ReportCreatorScreenEvent
     data class OnDateTextFieldValueChange(val value:String, val field:String): ReportCreatorScreenEvent
     object OnAddDialogDismiss: ReportCreatorScreenEvent
     object OnDatePickerCloseRequest: ReportCreatorScreenEvent

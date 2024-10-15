@@ -38,7 +38,7 @@ fun DateTextField(
             .fillMaxWidth()
             .padding(bottom = 15.dp)
             .onFocusChanged { focusState ->
-                onEvent(ReportCreatorScreenEvent.RequestDatePicker(name, focusState.isFocused))
+                onEvent(ReportCreatorScreenEvent.RequestDatePicker(focusState.isFocused))
             }
 
     )

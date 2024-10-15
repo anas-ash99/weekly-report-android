@@ -185,7 +185,7 @@ class ReportRepositoryImpl @Inject constructor(
         emit(Result.Loading)
         try {
             val fileBytes = remoteDataSource.getDocument(report).bytes()
-            val contentUri = saveFileToMediaStore("${report.name.replace(" ", "_")}.docx", fileBytes)
+            val contentUri = saveFileToMediaStore("${report.reportNumber}.Ausbildungsnachweis.docx", fileBytes)
             emit(Result.Success(contentUri!!))
 
         }catch (e:Exception){
@@ -198,7 +198,7 @@ class ReportRepositoryImpl @Inject constructor(
         emit(Result.Loading)
         try {
             val list = arrayListOf<ChatGBTMessage>()
-            val prompt1 = "I'll describe my tasks for each day of the week in german. Please generate a JSON object in the following format, ensuring no day has more than 8 hours of work logged:\n" +
+            val prompt1 = " I do a german ausbildung as ${loggedInUser?.ausbildungDepartment} I'll describe my tasks for each day of the week in german. Please generate a JSON object in the following format, ensuring no day has more than 8 hours of work logged:\n" +
                    "make sure the task descriptions are in german. but the day name in english as it is in the below json\n" +
                    "\"weekdayDescription\": [\n" +
                    "    \n" +

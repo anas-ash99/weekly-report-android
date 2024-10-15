@@ -52,6 +52,7 @@ import com.anas.weeklyreport.AppData.loggedInUser
 import com.anas.weeklyreport.R
 import com.anas.weeklyreport.presentaion.LoadingSpinner
 import com.anas.weeklyreport.presentaion.MyNotificationMessage
+import com.anas.weeklyreport.presentaion.home.MyProfilePic
 import com.anas.weeklyreport.screen_actions.UserDetailEvent
 import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.shared.AppScreen
@@ -148,13 +149,14 @@ fun UserDetailsScreen(navController: NavController?) {
                     )
                 }else{
                     Spacer(modifier = Modifier.height(20.dp))
-                    Image(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape),
-                        painter = painterResource(id = R.drawable.user_icon),
-                        contentDescription = "App Icon"
-                    )
+//                    Image(
+//                        modifier = Modifier
+//                            .size(80.dp)
+//                            .clip(CircleShape),
+//                        painter = painterResource(id = R.drawable.user_icon),
+//                        contentDescription = "App Icon"
+//                    )
+                    MyProfilePic( modifier = Modifier.size(90.dp), iconSize = 60.dp)
                     Spacer(modifier = Modifier.height(15.dp))
                 }
 
@@ -183,29 +185,6 @@ fun UserDetailsScreen(navController: NavController?) {
                     Text(text = "🖊️ Save" , fontSize = 18.sp)
                 }
 
-//                if (loggedInUser == null){
-//                    Spacer(modifier = Modifier.height(20.dp))
-//                    Text(text = "OR", fontSize = 18.sp, fontWeight = FontWeight.Normal)
-//                    Spacer(modifier = Modifier.height(15.dp))
-//                    OutlinedButton(
-//                        modifier = Modifier
-//                            .height(45.dp),
-//                        onClick = { /*TODO*/ },
-//                        colors = ButtonDefaults.buttonColors(
-//                            contentColor = Color.Unspecified,
-//                            containerColor = Color.Transparent
-//                        )
-//
-//                    ) {
-//                        Row (
-//                            horizontalArrangement=  Arrangement.Start,
-//                        verticalAlignment=  Alignment.CenterVertically,
-//                        ){
-//                            Icon(painter = painterResource(id = R.drawable.icons_google), contentDescription = "google", Modifier.size(25.dp))
-//                            Text(text = "Sign in with Google", modifier = Modifier.padding(start = 15.dp), fontSize = 18.sp, fontWeight = FontWeight.Normal)
-//                        }
-//                    }
-//                }
             }
 
         }

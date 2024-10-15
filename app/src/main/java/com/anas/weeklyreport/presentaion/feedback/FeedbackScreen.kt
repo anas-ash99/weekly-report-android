@@ -15,9 +15,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,9 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,15 +45,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.anas.weeklyreport.AppData
+import com.anas.weeklyreport.R
 import com.anas.weeklyreport.presentaion.LoadingSpinner
 import com.anas.weeklyreport.presentaion.MyNotificationMessage
 import com.anas.weeklyreport.screen_actions.FeedbackScreenEvent
 import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.viewmodels.FeedbackViewModel
-import com.anas.weeklyreport.viewmodels.UserDetailsViewModel
-import java.lang.Math.ceil
-import java.lang.Math.floor
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,23 +73,23 @@ fun FeedbackScreen (
     val emojis = arrayListOf(
         Emoji(
             "😠",
-            "Very Bad"
+            stringResource(id = R.string.very_bad)
         ),
         Emoji(
             "☹️",
-            "Bad"
+            stringResource(id = R.string.bad)
         ),
         Emoji(
             "😐",
-            "Neutral"
+            stringResource(id = R.string.neutral)
         ),
         Emoji(
             "🙂",
-            "Good"
+            stringResource(id = R.string.good)
         ),
         Emoji(
             "😍",
-            "Very Good"
+            stringResource(id = R.string.very_good)
         ),
     )
 
@@ -113,7 +104,7 @@ fun FeedbackScreen (
                           Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
                         }
                    },
-                   title = {Text(text = "Give Feedback" )},
+                   title = {Text(text = stringResource(id = R.string.give_feedback) )},
                    colors = TopAppBarDefaults.topAppBarColors(
                        containerColor = Color.Transparent
                    )
@@ -127,7 +118,7 @@ fun FeedbackScreen (
                     .verticalScroll(rememberScrollState()),
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
-                Text(text = "Email Address (optional)", fontSize = 17.sp, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(id = R.string.email_label_optional), fontSize = 17.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,7 +126,7 @@ fun FeedbackScreen (
                     textStyle = TextStyle(fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
-                    placeholder = { Text(text = "Enter your email address")},
+                    placeholder = { Text(text = stringResource(id = R.string.email_textfield_hint))},
                     onValueChange = {viewModel.onEvent(FeedbackScreenEvent.OnEmailValueChange(it.trim())) },
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
@@ -148,13 +139,12 @@ fun FeedbackScreen (
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Text(text = "Rate your experience", fontSize = 17.sp, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(id = R.string.rate_your_experience), fontSize = 17.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row (
                     Modifier
-                        .fillMaxWidth()
-                        ,
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment=  Alignment.CenterVertically,
                 ){
@@ -174,14 +164,14 @@ fun FeedbackScreen (
                             ){
                                 Text(text = it.icon, fontSize = 25.sp)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(text = it.text, fontSize = 13.sp)
+                                Text(text = it.text, fontSize = 12.sp)
                             }
 
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(70.dp))
-                Text(text = "Care to share more about it ?", fontSize = 17.sp, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(id = R.string.care_to_share_something), fontSize = 17.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(10.dp))
                 OutlinedTextField(
                     modifier = Modifier
@@ -189,7 +179,7 @@ fun FeedbackScreen (
                         .fillMaxWidth(),
                     value = state.message,
                     textStyle = TextStyle(fontSize = 16.sp),
-                    placeholder = { Text(text = "Say something here...")},
+                    placeholder = { Text(text = stringResource(id = R.string.feedback_textfild_hint))},
                     onValueChange = {viewModel.onEvent(FeedbackScreenEvent.OnMessageValueChange(it))},
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
@@ -218,7 +208,7 @@ fun FeedbackScreen (
                         )
 
                     ) {
-                        Text(text = "Send Feedback", color = Color.White, fontSize = 16.sp)
+                        Text(text = stringResource(id = R.string.send_feedback), color = Color.White, fontSize = 16.sp)
                     }
 
                 }

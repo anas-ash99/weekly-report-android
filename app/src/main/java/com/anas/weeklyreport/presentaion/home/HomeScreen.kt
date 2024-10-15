@@ -1,26 +1,33 @@
+@file:Suppress("t")
+
 package com.anas.weeklyreport.presentaion.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.anas.weeklyreport.AppData.loggedInUser
 import com.anas.weeklyreport.R
 import com.anas.weeklyreport.extension_methods.setLocale
@@ -63,8 +69,8 @@ import com.anas.weeklyreport.presentaion.MyNotificationMessage
 import com.anas.weeklyreport.presentaion.home.bottom_sheet.HomeBottomSheet
 import com.anas.weeklyreport.presentaion.home.report_list.ReportList
 import com.anas.weeklyreport.presentaion.home.report_list.openWordDocument
-import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.screen_actions.HomeScreenEvent
+import com.anas.weeklyreport.shared.AppColors
 import com.anas.weeklyreport.shared.AppScreen
 import com.anas.weeklyreport.shared.ReportListType
 import com.anas.weeklyreport.viewmodels.HomeViewmodel
@@ -73,7 +79,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.launch
 import java.util.Locale
-import kotlin.system.exitProcess
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,8 +94,6 @@ fun HomeScreen(navController: NavController?) {
     val reports = viewmodel.reports.collectAsState()
     val snackbarHostState = remember {SnackbarHostState()}
     val sheetState = rememberModalBottomSheetState()
-
-
     LaunchedEffect(state.value.screen){ // launchedEffect for handling navigation
         if (state.value.screen == AppScreen.HOME_SCREEN.toString()){
             navController?.popBackStack()
@@ -147,9 +150,6 @@ fun HomeScreen(navController: NavController?) {
             }
         ) {
             Scaffold(
-                snackbarHost  = {
-                    SnackbarHost(hostState = snackbarHostState)
-                },
                 floatingActionButton = {
                     if (!state.value.itemsLoading){
                         FloatingActionButton(
@@ -186,6 +186,7 @@ fun HomeScreen(navController: NavController?) {
 
                 Text(text ="${state.value.recomposeTrigger}", fontSize = 0.sp)
 
+               
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -212,41 +213,27 @@ fun HomeScreen(navController: NavController?) {
                             Image(
                                 painter = painterResource(id = R.drawable.empty_screen_no_background),
                                 contentDescription ="" ,
-                                modifier= Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                                modifier= Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 20.dp),
                                 contentScale = ContentScale.FillWidth
                             )
                             Text(
-                                text = "No Reports",
+                                text = stringResource(id = R.string.no_reports),
                                 fontSize = 20.sp,
                                 modifier= Modifier.padding(bottom = 20.dp)
                             )
                         }
                     }else{
-                        if (state.value.isAppLanguageLoading){
-                            Box(
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .padding(horizontal = 16.dp, vertical = 15.dp)
-                                    .height(25.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .shimmerEffect(),
-                            )
-                        }else{
-                            Text(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 15.dp)
-                                ,
-                                text = stringResource(id = R.string.all_reports),
-                                fontSize = 18.sp
-                            )
-                        }
-
                         ReportList(state = state.value,
                             onEvent = viewmodel::onEvent,
                             reports = reports.value,
                             type = ReportListType.ALL.toString(),
+                            filterCategories = viewmodel.filterCategories
                         )
+
                     }
+
                 }
             }
         }

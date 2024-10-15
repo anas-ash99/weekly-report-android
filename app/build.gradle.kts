@@ -62,6 +62,7 @@ android {
 
 dependencies {
     implementation("androidx.browser:browser:1.8.0")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
     val roomVersion = "2.6.1"
 
     implementation("androidx.activity:activity-ktx:1.8.2") // Check for the latest version
@@ -107,6 +108,9 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion") // Use latest version
     // Kotlin Coroutines for Room
     implementation("androidx.room:room-ktx:$roomVersion")
+
+//    implementation("androidx.compose:accompanist-foundation-layout:1.2.0")
+
 }
 
 

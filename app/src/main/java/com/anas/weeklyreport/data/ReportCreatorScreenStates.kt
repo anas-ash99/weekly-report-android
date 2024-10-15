@@ -13,7 +13,6 @@ data class ReportCreatorScreenStates(
     var descriptionItemIndex:Int = 0,
     var weekDayListTrigger:Int = 0,
     var currentWeekDayItem:String = "Monday",
-    var currentDatePickerField:String = "",
     var dialogDescriptionItem:Description = Description(),
     var selectedDatePicker: LocalDate = LocalDate.now(),
     var previewWeekDays:List<Weekday> = arrayListOf(),
